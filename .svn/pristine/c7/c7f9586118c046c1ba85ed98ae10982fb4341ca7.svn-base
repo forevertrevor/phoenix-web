@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib version="2.0">
+    
+    <description>Phoenix Query Library</description>
+    <display-name>Phoenix Query</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>qry</short-name>
+    <uri>http://mws-systems.co.uk/query</uri>
+
+    <function>
+        <name>executeQuery</name>
+        <function-class>com.mws.phoenix.web.functions.Query</function-class>
+        <function-signature>java.util.List executeQuery(java.lang.String)</function-signature>
+    </function>
+</taglib>

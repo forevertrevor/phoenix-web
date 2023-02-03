@@ -1,0 +1,817 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN" "http://jakarta.apache.org/struts/dtds/struts-config_1_1.dtd">
+<struts-config>
+	<!--	<data-sources>	</data-sources>	-->
+	<form-beans>
+		<form-bean name="loginForm"     type="com.mws.phoenix.web.login.LoginForm"/>
+		<form-bean name="remindForm"    type="com.mws.phoenix.web.login.RemindForm"/>
+		<form-bean name="contactForm"   type="com.mws.phoenix.web.login.ContactForm"/>
+
+		<form-bean name="userForm"      type="com.mws.phoenix.web.admin.UserForm"/>
+		<form-bean name="groupForm"     type="com.mws.phoenix.web.admin.GroupForm"/>
+		<form-bean name="styleForm"     type="com.mws.phoenix.web.admin.StyleForm"/>
+		<form-bean name="alertForm"     type="com.mws.phoenix.web.admin.AlertForm"/>
+		<form-bean name="autoLoginForm" type="com.mws.phoenix.web.admin.AutoLoginForm"/>
+		<form-bean name="adminForm"     type="com.mws.phoenix.web.admin.AdminForm"/>
+		<form-bean name="archForm"      type="com.mws.phoenix.web.admin.ArchiveForm"/>
+		<form-bean name="financeForm"   type="com.mws.phoenix.web.admin.FinanceForm"/>
+		<form-bean name="hashForm"      type="com.mws.phoenix.web.admin.UserHashForm"/>
+
+		<form-bean name="newsForm"      type="com.mws.phoenix.web.press.NewsForm"/>
+		<form-bean name="archiveForm"   type="com.mws.phoenix.web.press.NewsForm"/>
+		<form-bean name="searchForm"    type="com.mws.phoenix.web.search.SearchForm"/>
+		<form-bean name="folderForm"    type="com.mws.phoenix.web.press.NewsForm"/>
+		<form-bean name="itemForm"      type="com.mws.phoenix.web.press.ItemForm"/>
+		<form-bean name="selectedForm"  type="com.mws.phoenix.web.press.SelectedForm"/>
+		<form-bean name="toolForm"      type="com.mws.phoenix.web.press.ToolForm"/>
+
+		<form-bean name="foldersForm"   type="com.mws.phoenix.web.folders.FoldersForm"/>
+
+		<!-- Evaluation mappings -->
+		<!-- 
+		<form-bean name="reportForm"    type="com.mediagen.eval.ReportForm"/>
+		<form-bean name="reportsForm"   type="com.mediagen.eval.ReportsForm"/>
+   		-->
+   	</form-beans>
+	
+	<global-exceptions>
+		<exception type="com.mws.phoenix.web.exceptions.ResourcePathException" 
+		 			key="" 
+		 		handler="com.mws.phoenix.web.exceptions.ParameterisableExceptionHandler" 
+		 		   path="/welcome/fail.jsp"/>
+		<exception type="com.mws.db.DataSourceException" 
+					key="" 
+				handler="com.mws.phoenix.web.exceptions.ParameterisableExceptionHandler" 
+				   path="/welcome/fail.jsp"/>
+	</global-exceptions>
+	
+	<global-forwards>
+		<forward name="login"   path="/action/index"/>
+		<forward name="failure" path="/welcome/fail.jsp"/>
+		<forward name="noaccess" path="/welcome/noaccess.jsp"/>
+	</global-forwards>
+	
+	<action-mappings>
+        <!-- WELCOME PAGES ACTIONS -->
+        
+        <!-- Dispatches to the correct welcome page -->
+		<action path="/welcome" 
+				type="com.mws.phoenix.web.TilesAction">
+		</action>
+
+		<!-- Displays the welcome page -->
+		<action path="/index" 
+				type="com.mws.phoenix.web.SuccessAction">
+			<forward name="success" path="/action/welcome?page=welcome" />
+		</action>
+
+		<!-- Submits the contact us form -->
+		<action path="/contact" 
+			    type="com.mws.phoenix.web.login.ContactAction" 
+				name="contactForm" 
+			   scope="request" 
+			   input="/action/welcome?page=contact" 
+			validate="false">
+			<forward name="success" path="/action/welcome?page=contact"/>
+		</action>
+
+		<!-- Sends the user a reminder email -->
+		<action path="/remind"
+				type="com.mws.phoenix.web.login.RemindAction"
+				name="remindForm"        	   
+			   scope="request" 	           
+			   input="/action/welcome?page=remind"         	
+			validate="true">			
+			<forward name="failure" path="/action/welcome?page=remind" />        
+		</action>
+
+		<!-- Logs the user into the web application -->
+		<action path="/login" 
+			    type="com.mws.phoenix.web.login.LoginAction" 
+				name="loginForm" 
+			   scope="request" 
+			   input="/action/index" 
+			validate="true">
+			<exception type="com.mws.db.DataSourceException" key="" handler="com.mws.phoenix.web.exceptions.ParameterisableExceptionHandler" path="/action/index" />
+			<forward name="success" path="/action/home" redirect="true" />
+		</action>
+
+		<!-- Automatically logs in the user -->
+		<action path="/auto-login"
+				type="com.mws.phoenix.web.admin.AutoLoginAction"
+				name="autoLoginForm"
+			  scope="request"
+   		      input="/action/index">
+   	    </action>
+
+		<!-- Log the current user out of the application -->
+		<action path="/logoff" 
+				type="com.mws.phoenix.web.login.LogoffAction">
+		</action>
+
+        <!-- GENERAL ACTIONS -->
+        
+		<!-- Forwards to an image -->
+		<action path="/image" 
+				type="com.mws.phoenix.web.ResourceAction">
+		</action>
+		<!-- Forwards to a style sheet -->
+		<action path="/style" 
+				type="com.mws.phoenix.web.ResourceAction">
+		</action>
+		<!-- Forwards to a javascript -->
+		<action path="/script" 
+				type="com.mws.phoenix.web.ResourceAction">
+		</action>
+		<!-- Forwards to a JavaServer Page -->
+		<action path="/page" 
+				type="com.mws.phoenix.web.ResourceAction">
+		</action>
+		<!-- Forwards to a RSS Page -->
+		<action path="/rss" 
+				type="com.mws.phoenix.web.ResourceAction">
+		</action>
+
+		<!-- Display an article's source file -->
+		<action path="/clip" 
+				type="com.mws.phoenix.web.press.ClipAction">
+			<forward name="failure" path="/action/page?resource=news/nosourcefile.jsp"/>
+			<forward name="nla-redirect" path ="/action/page?resource=news/nlaredirect.jsp"/>
+		</action>
+		
+		<!-- The home page for the logged in user -->
+		<action path="/home" 
+				type="com.mws.phoenix.web.SuccessAction">
+			<forward name="success" path="/action/page?property=home"/>
+		</action>
+        
+		<!-- The news page for the logged in user -->
+		<action path="/news" 
+				type="com.mws.phoenix.web.press.NewsAction" 
+				name="newsForm" 
+			   scope="session" 
+			   input="/action/press?property=news"
+			validate="true">
+			<forward name="success" path="/action/press?property=news"/>
+		</action>
+
+		<!-- The archive page for the logged in user -->
+		<action path="/archive" 
+				type="com.mws.phoenix.web.press.NewsAction" 
+				name="archiveForm" 
+			   scope="session" 
+			   input="/action/press?property=archive"
+			validate="true">
+			<forward name="success" path="/action/press?property=archive"/>
+		</action>
+
+		<!-- The search page for the logged in user -->
+		<action path="/search" 
+				type="com.mws.phoenix.web.search.SearchAction" 
+				name="searchForm" 
+			   scope="request" 
+			   input="/action/press?page=default.search"
+			validate="false">
+			<forward name="success" path="/action/press?page=default.search"/>
+		</action>
+
+		<!-- The summary page for the logged in user -->
+		<action path="/news-summary" 
+				type="com.mws.phoenix.web.press.NewsAction" 
+				name="newsForm" 
+			   scope="session" 
+			   input="/action/press?page=summary"
+			validate="true">
+			<forward name="success" path="/action/press?page=summary"/>
+		</action>
+        
+		<!-- The export page for the logged in user -->
+		<action path="/news-export" 
+				type="com.mws.phoenix.web.press.ExportNewsAction" 
+				name="newsForm" 
+			   scope="session" 
+			   input="/action/press?property=news"
+			validate="true">
+			<forward name="success" path="/action/press?page=export"/>
+		</action>
+        
+		<!-- The summary page for the logged in user -->
+		<action path="/archive-summary" 
+				type="com.mws.phoenix.web.press.NewsAction" 
+				name="archiveForm" 
+			   scope="session" 
+			   input="/action/press?page=summary"
+			validate="true">
+			<forward name="success" path="/action/press?page=summary"/>
+		</action>
+        		
+		<!-- Dispatches to the correct press tile -->
+		<action path="/press" 
+				type="com.mws.phoenix.web.TilesAction"
+           parameter="control=0,message=Press">
+		</action>
+
+		<!-- Selects articles for further use -->
+		<action path="/select" 
+				type="com.mws.phoenix.web.SuccessAction" 
+				name="selectedForm" 
+			   scope="session" 
+			validate="true">
+			<forward name="success" path="/action/tool?fwd=bookmark"/>
+		</action>
+
+		<!-- Edit a news item -->
+		<action path="/edit" 
+				type="com.mws.phoenix.web.press.ItemAction" 
+				name="itemForm" 
+			   scope="request" 
+		   parameter="read" 
+		    validate="false">
+			<forward name="success" path="/action/press?page=default.edit"/>
+		</action>
+
+		<!-- Delete a news item -->
+		<action path="/delete" 
+                type="com.mws.phoenix.web.press.ItemAction" 
+                name="itemForm" 
+               scope="request" 
+           parameter="delete" 
+            validate="false">
+			<forward name="success" path="/action/news"/>
+		</action>
+
+        <!-- Update a news item -->
+		<action path="/save" 
+                type="com.mws.phoenix.web.press.ItemAction" 
+                name="itemForm" 
+               scope="request" 
+           parameter="update" 
+            validate="false">
+			<forward name="success" path="/action/news"/>
+		</action>
+
+		<!-- Toolbar Dispatch Action -->
+		<action path="/tool" type="com.mws.phoenix.web.DispatchAction">
+			<forward name="view" path="/action/viewarticle"/>
+			<forward name="faxback" path="/action/faxback"/>
+			<forward name="emailarticle" path="/action/emailarticle"/>
+			<forward name="printarticle" path="/action/printarticle"/>
+			<forward name="emailsummary" path="/action/emailsummary"/>
+			<forward name="printsummary" path="/action/printsummary"/>
+		</action>
+
+		<!-- View Action -->
+		<action path="/viewarticle" 
+				type="com.mws.phoenix.web.press.ToolAction" 
+				name="toolForm" 
+			   scope="request" 
+           parameter="2"
+			   input="/action/press?page=tool.view" 
+			validate="true">
+			<forward name="display" path="/action/press?page=tool.view"/>
+			<forward name="complete" path="/action/tool?fwd=bookmark"/>
+			<forward name="failure" path="/action/tool?fwd=bookmark"/>
+		</action>
+
+		<!-- Faxback Action -->
+		<action path="/faxback" 
+				type="com.mws.phoenix.web.press.ToolAction" 
+				name="toolForm" 
+			   scope="request" 
+           parameter="7"
+			   input="/action/press?page=tool.faxback" 
+			validate="true">
+			<forward name="display" path="/action/press?page=tool.faxback"/>
+			<forward name="complete" path="/action/press?page=tool.faxback"/>
+			<forward name="failure" path="/action/press?page=tool.faxback"/>
+		</action>
+
+		<!-- Email Articles Action -->
+		<action path="/emailarticle" 
+				type="com.mws.phoenix.web.press.ToolAction" 
+				name="toolForm" 
+			   scope="request" 
+           parameter="6"
+			   input="/action/press?page=tool.emailarticle" 
+			validate="true">
+			<forward name="display" path="/action/press?page=tool.emailarticle"/>
+			<forward name="complete" path="/action/tool?fwd=bookmark"/>
+			<forward name="failure" path="/action/tool?fwd=bookmark"/>
+		</action>
+
+		<!-- Print Articles Action -->
+		<action path="/printarticle" 
+			    type="com.mws.phoenix.web.press.ToolAction" 
+				name="toolForm" 
+			   scope="request" 
+           parameter="4"
+			   input="/action/press?page=tool.printarticle" 
+			validate="true">
+			<forward name="retry" path="/action/page?resource=news/printarticle.jspf"/>
+			<forward name="failure" path="/action/page?resource=news/printarticlefail.jspf"/>
+			<forward name="nla-redirect" path ="/action/page?resource=news/nlaredirect.jsp"/>
+		</action>
+
+		<!-- Email Summaries Action -->
+		<action path="/emailsummary" 
+				type="com.mws.phoenix.web.press.ToolAction" 
+				name="toolForm" 
+			   scope="request" 
+           parameter="5"
+			   input="/action/press?page=tool.emailsummary" 
+			validate="true">
+			<forward name="display" path="/action/press?page=tool.emailsummary"/>
+			<forward name="complete" path="/action/tool?fwd=bookmark"/>
+		</action>
+
+		<!-- Print Summaries Action -->
+		<action path="/printsummary" 
+				type="com.mws.phoenix.web.press.ToolAction" 
+				name="toolForm" 
+			   scope="request" 
+           parameter="3"
+			   input="/action/press?page=tool.printsummary" 
+			validate="true">
+			<forward name="complete" path="/action/page?resource=news/printsummary.jspf"/>
+		</action>
+
+		<!-- WEB FOLDERS -->
+		<action path="/folders"
+				type="com.mws.phoenix.web.folders.FoldersAction"
+				name="foldersForm"
+			   scope="request"
+			   input="/action/folders"
+		    validate="true">
+			<forward name="view" path="/action/press?page=viewfolders"/>
+			<forward name="list" path="/action/press?page=viewfolder"/>
+			<forward name="delete" path="/action/press?page=viewfolders"/>
+	    </action>
+
+		<!-- The archive page for the logged in user -->
+		<action path="/folder" 
+				type="com.mws.phoenix.web.press.NewsAction" 
+				name="folderForm" 
+			   scope="session" 
+			   input="/action/press?page=viewfolder"
+			validate="true">
+			<forward name="success" path="/action/folders?source=folder"/>
+		</action>
+
+		<action path="/folder-edit"
+			    type="com.mws.phoenix.web.folders.FoldersAction"
+			    name="foldersForm"
+			   scope="request"
+			   input="/action/folders"
+		    validate="true">
+			<forward name="edit" path="/action/press?page=editfolder"/>
+		</action>   
+			
+		<action path="/folder-save"
+			    type="com.mws.phoenix.web.folders.FoldersAction"
+			    name="foldersForm"
+			   scope="request"
+			   input="/action/press?page=editfolder"
+		    validate="true">
+			<forward name="save" path="/action/folders?command=view"/>
+		</action>   
+
+		<action path="/folder-summary"
+				type="com.mws.phoenix.web.folders.FoldersAction"
+				name="foldersForm"
+			   scope="request"
+			   input="/action/press?page=foldersummary"
+		    validate="true">
+			<forward name="list" path="/action/press?page=foldersummary"/>
+	    </action>
+
+		<!-- Delete a news item -->
+		<action path="/item-delete" 
+                type="com.mws.phoenix.web.press.ItemAction" 
+                name="itemForm" 
+               scope="request" 
+           parameter="delete" 
+            validate="false">
+			<forward name="success" path="/action/folders"/>
+		</action>
+
+		<action path="/items-add"
+				type="com.mws.phoenix.web.folders.FoldersAction"
+				name="foldersForm"
+			   scope="request"
+			   input="/action/folders"
+		    validate="true">
+			<forward name="add" path="/action/tool?fwd=bookmark"/>
+	    </action>
+		<action path="/items-remove"
+				type="com.mws.phoenix.web.folders.FoldersAction"
+				name="foldersForm"
+			   scope="request"
+			   input="/action/folders"
+		    validate="true">
+			<forward name="remove" path="/action/tool?fwd=bookmark"/>
+	    </action>
+
+		<!-- CLIENT EVALUATION -->
+		<!-- 
+		<action path="/evaluation"
+				type="com.mws.phoenix.web.SuccessAction">
+			<forward name="success" path="/action/eval?property=evaluation"/>
+		</action>
+		-->
+		<!-- Dispatches to the correct eval tile -->
+		<!-- 
+		<action path="/eval" 
+				type="com.mws.phoenix.web.TilesAction"
+           parameter="control=1,message=Evaluation">
+		</action>
+
+		<action path="/report-one"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.articlefilter"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.articlefilter"/>
+			<forward name="next" path="/action/eval?page=evalwiz.articlefilter"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.articlefilter"/>
+		</action>
+
+		<action path="/report-two"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.articlefilter"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.articlefilter"/>
+			<forward name="next" path="/action/eval?page=evalwiz.topicfilter"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.articlefilter"/>
+		</action>
+
+		<action path="/report-three"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.topicfilter"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.topicfilter"/>
+			<forward name="next" path="/action/eval?page=evalwiz.aggregation"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.articlefilter"/>
+		</action>
+
+		<action path="/report-four"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.aggregation"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.aggregation"/>
+			<forward name="next" path="/action/eval?page=evalwiz.tabledata"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.topicfilter"/>
+		</action>
+
+		<action path="/report-five"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.tabledata"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.tabledata"/>
+			<forward name="next" path="/action/eval?page=evalwiz.chartdata"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.aggregation"/>
+		</action>
+
+		<action path="/report-six"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.chartdata"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.chartdata"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.tabledata"/>
+		</action>
+
+		<action path="/execute-report"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.viewreport"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.viewreport"/>
+			<forward name="next" path="/action/eval?page=evalwiz.savereport"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.chartdata"/>
+		</action>
+
+		<action path="/save-report"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+			   scope="session"
+			   input="/action/eval?page=evalwiz.savereport"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.savereport"/>
+			<forward name="next" path="/action/reports"/>
+			<forward name="previous" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+		<action path="/report-list"
+				type="com.mediagen.eval.ReportListAction"
+			   input="/action/eval?page=evalwiz.viewreport">
+			<forward name="success" path="/action/eval?page=evalwiz.reportlist"/>
+		</action>
+			   
+
+		<action path="/reports"
+				type="com.mediagen.eval.ReportsAction"
+				name="reportsForm"
+			   scope="request"
+			    input="/action/reports"
+			 validate="true">
+			<forward name="view" path="/action/eval?page=viewreports"/>
+			<forward name="settings" path="/action/eval?page=evalwiz.reportsettings"/>
+			<forward name="execute" path="/action/eval?page=evalwiz.viewreport"/>
+			<forward name="edit" path="/action/eval?page=evalwiz.articlefilter"/>
+			<forward name="delete" path="/action/eval?page=viewreports"/>
+			<forward name="default" path="/action/eval?page=viewreports"/>
+		</action>
+		-->
+		
+		<!-- Admin Mappings -->
+        <action path="/admin"
+                type="com.mws.phoenix.web.TilesAction">
+        </action>
+        <action path="/admin-list"
+				type="com.mws.phoenix.web.admin.AdminAction"
+				name="adminForm"
+			   scope="session"
+			   input="/action/admin?page=default.home"
+		   parameter="index"
+			validate="true">
+			<forward name="index" path="/action/admin?page=default.home"/>
+			<forward name="alerts" path="/action/admin?page=default.alerts"/>
+			<forward name="groups" path="/action/admin?page=default.groups"/>
+			<forward name="styles" path="/action/admin?page=default.styles"/>
+			<forward name="users" path="/action/admin?page=default.users"/>
+			<forward name="archives" path="/action/admin?page=default.archives"/>
+			<forward name="finances" path="/action/admin?page=default.finances"/>
+		</action>
+
+		<action path="/admin-alerts"
+				type="com.mws.phoenix.web.admin.AdminAction"
+		   parameter="alerts">
+			<forward name="success" path="/action/admin?page=default.alerts"/>
+		</action>
+
+		<action path="/admin-groups"
+				type="com.mws.phoenix.web.admin.AdminAction"
+		   parameter="groups">
+			<forward name="success" path="/action/admin?page=default.groups"/>
+		</action>
+
+   		<!-- View or update a user group -->
+		<action path="/admin-group" 
+				type="com.mws.phoenix.web.admin.GroupAction" 
+				name="groupForm" 
+			   scope="request" 
+			   input="/action/admin?page=user.group"
+			validate="true">
+			<forward name="success" path="/action/admin?page=default.group"/>
+		</action>
+
+		<action path="/admin-styles"
+				type="com.mws.phoenix.web.admin.AdminAction"
+		   parameter="styles">
+			<forward name="success" path="/action/admin?page=default.styles"/>
+		</action>
+
+        <!-- View or update a user style -->
+		<action path="/admin-style" 
+				type="com.mws.phoenix.web.admin.StyleAction" 
+				name="styleForm" 
+			   scope="request" 
+			   input="/action/admin?page=default.style"
+			validate="true">
+			<forward name="success" path="/action/admin?page=default.style"/>
+		</action>
+
+		<action path="/admin-archive"
+				type="com.mws.phoenix.web.admin.ArchiveAction"
+				name="archForm"
+			   scope="request"
+			   	input="/action/admin?page=default.archive"
+ 			 validate="true">
+			<forward name="success" path="/action/admin?page=default.archive"/>
+		</action>
+
+		<action path="/admin-finance"
+				type="com.mws.phoenix.web.admin.FinanceAction"
+				name="financeForm"
+			   scope="request"
+			   	input="/action/admin?page=default.finance"
+ 			 validate="true">
+			<forward name="success" path="/action/admin?page=default.finance"/>
+		</action>
+
+		<action path="/admin-users"
+				type="com.mws.phoenix.web.admin.AdminAction"
+		   parameter="users">
+			<forward name="success" path="/action/admin?page=default.users"/>
+		</action>
+
+		<!-- View or update a user profile -->
+		<action path="/admin-user" 
+				type="com.mws.phoenix.web.admin.UserAction" 
+				name="userForm" 
+			   scope="request" 
+			   input="/action/admin?page=default.user" 
+			validate="true">
+			<forward name="success" path="/action/admin?page=default.user"/>
+		</action>
+        
+		<!-- View or update a user profile's brief access -->
+		<action path="/admin-user-press" 
+				type="com.mws.phoenix.web.admin.UserAction" 
+				name="userForm" 
+			   scope="request" 
+			   input="/action/admin?page=default.user.briefs" 
+			validate="true">
+			<forward name="success" path="/action/admin?page=default.user.briefs"/>
+		</action>
+
+   		<!-- View or update a user profile's programme access -->
+		<!-- 
+		<action path="/admin-user-eval" 
+				type="com.mediagen.web.UserAction" 
+				name="userForm" 
+			   scope="request" 
+			   input="/action/admin?page=default.user.eval" 
+			validate="true">
+			<forward name="success" path="/action/admin?page=default.user.eval"/>
+		</action>
+        -->	
+		<!-- View or update email alert settings -->
+		<action path="/admin-alert" 
+                type="com.mws.phoenix.web.admin.AlertAction" 
+                name="alertForm" 
+               scope="request" 
+			   input="/action/admin?page=default.alert" 
+            validate="true">
+			<forward name="success" path="/action/admin?page=default.alert"/>
+		</action>
+        
+        <action path="/admin-hash"
+        		type="com.mws.phoenix.web.admin.UserHashAction"
+        		name="hashForm"
+        	   scope="request"
+        	   input="/action/admin?page=user.hash"
+        	validate="true">
+			<forward name="success" path="/action/admin?page=user.hash"/>
+       	</action>
+        
+		<action path="/admin-log"
+				type="com.mws.phoenix.web.admin.AdminAction"
+		   parameter="log">
+			<forward name="success" path="/action/admin?page=default.log"/>
+		</action>
+		<!-- 
+        <action path="/custom-report"
+                type="com.mediagen.eval.ReportAction"
+                name="reportForm"
+               scope="session"
+               input=""
+            validate="true">
+            <forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+        </action>
+        -->
+		<!-- Client Specific Mappings -->
+		<!-- 
+		<action path="/report-ave-by-programme"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.programmeave"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.programmeave"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+		<action path="/report-ave-by-channel"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.channelave"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.channelave"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+		<action path="/report-tone-by-programme"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.programmetone"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.programmetone"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+		<action path="/report-tone-by-channel"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.channeltone"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.channeltone"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+		<action path="/report-count-by-programme"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.programmecount"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.programmecount"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+		<action path="/report-count-by-channel"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.channelcount"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.channelcount"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+        <action path="/report-ave-by-topic"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.topicave"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.topicave"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+        
+        <action path="/report-tone-by-topic"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.topictone"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.topictone"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+
+        <action path="/report-count-by-topic"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.topiccount"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.topiccount"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+        
+        <action path="/report-omd-data"
+				type="com.mediagen.eval.ReportAction"
+				name="reportForm"
+		 	   scope="session"
+			   input="/action/eval?page=evalwiz.omddata"
+			validate="true">
+			<forward name="current" path="/action/eval?page=evalwiz.omddata"/>
+			<forward name="next" path="/action/eval?page=evalwiz.viewreport"/>
+		</action>
+		-->
+    </action-mappings>
+	
+    <!--
+	<controller>
+	</controller>
+	-->
+	<!--
+	<message-resources>
+	</message-resources>
+	<message-resources>
+	</message-resources>
+	-->
+	<plug-in className="org.apache.struts.tiles.TilesPlugin">
+		<set-property property="definitions-config" 
+		                 value="/WEB-INF/welcome-tiles-defs.xml, 
+		                        /WEB-INF/admin-tiles-defs.xml, 
+		                        /WEB-INF/press-tiles-defs.xml"/>
+	</plug-in>
+	<plug-in className="org.apache.struts.validator.ValidatorPlugIn">
+
+		<set-property property="pathnames" 
+                         value="/WEB-INF/validator-rules.xml, 
+                                /WEB-INF/welcome-validation.xml, 
+                                /WEB-INF/admin-validation.xml, 
+                                /WEB-INF/press-validation.xml"/>
+	</plug-in>
+	<!--
+	<plug-in>
+	</plug-in>
+	-->
+</struts-config>

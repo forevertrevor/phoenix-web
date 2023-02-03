@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="com.mws.phoenix.db.web">
+
+	<class name="WebLogEntry" table="weblog">
+		<id name="entryID" column="entryid" type="long">
+			<generator class="sequence">
+				<param name="sequence">weblog_entryid_seq</param>
+			</generator>
+		</id>
+		<property name="entryTime" column="entrytime" type="timestamp"/>
+		<property name="entryType" column="entrytype" type="string"/>
+		<property name="message" column="message" type="string"/>
+	</class>
+
+	<class name="LoginGroup" table="logingroup">
+		<id name="groupID" column="groupid" type="long">
+			<generator class="sequence">
+				<param name="sequence">logingroup_groupid_seq</param>
+			</generator>
+		</id>
+		<property name="groupName" column="groupname" type="string" length="50" not-null="true" unique="true"/>
+		<property name="pressMessage" column="message" type="string" length="500" not-null="false" unique="false"/>
+		<property name="evalMessage" column="evalmessage" type="string" length="500" not-null="false" unique="false"/>
+        <many-to-one name="client" column="clientid" class="com.mws.phoenix.db.brief.Client" lazy="false"/>
+		<set name="logins" inverse="true" lazy="true">
+			<key column="groupid"/>
+			<one-to-many class="Login"/>
+		</set>
+		<set name="folders" inverse="true" lazy="false">
+			<key column="groupid"/>
+			<one-to-many class="WebFolder"/>
+		</set>
+	</class>
+
+	<class name="LoginStyle" table="loginstyle">
+		<id name="styleID" column="styleid" type="long">
+			<generator class="sequence">
+				<param name="sequence">loginstyle_styleid_seq</param>
+			</generator>
+		</id>
+		<property name="styleName" column="stylename" type="string" length="50" not-null="true" unique="true"/>
+		<property name="home" column="home" type="string" length="50" not-null="true" unique="false"/>
+		<property name="news" column="news" type="string" length="50" not-null="true" unique="false"/>
+		<property name="css" column="css" type="string" length="50" not-null="true" unique="false"/>
+		<property name="folder" column="folder" type="string" length="50" not-null="true" unique="false"/>
+		<property name="emailArticle" column="emailarticle" type="string" length="50" not-null="true" unique="false"/>
+		<property name="emailSummary" column="emailsummary" type="string" length="50" not-null="true" unique="false"/>
+		<property name="printSummary" column="printsummary" type="string" length="50" not-null="true" unique="false"/>
+		<property name="printArticle" column="printarticle" type="string" length="50" not-null="true" unique="false"/>
+		<property name="evaluation" column="evaluation" type="string" length="50" not-null="true" unique="false"/>
+		<property name="archive" column="archive" type="string" length="50" not-null="true" unique="false"/>
+		<property name="brandingID" column="brandingid" type="string" length="10"/>
+		<property name="pageNumber" column="pagenumber" type="boolean"/>
+		<property name="summary" column="summary" type="boolean"/>
+    </class>
+
+	<class name="Login" table="login">
+		<id name="loginID" column="loginid" type="long">
+			<generator class="sequence">
+				<param name="sequence">login_loginid_seq</param>
+			</generator>
+		</id>
+		<property name="loginName" column="loginname" type="string" length="50" not-null="true" unique="true"/>
+		<property name="password" column="password" type="string" length="50" not-null="true" unique="false"/>
+		<property name="userName" column="username" type="string" length="100" not-null="true"/>
+		<property name="fax" column="fax" type="string" length="20" not-null="false"/>
+		<property name="email" column="email" type="string" length="50" not-null="false"/>
+		<property name="level" column="level" type="long" not-null="true"/>
+		<property name="maxLogins" column="maxlogins" type="long" not-null="true"/>
+		<property name="curLogins" column="curlogins" type="long" not-null="true"/>
+		<property name="controls" column="controls" type="com.mws.db.hibernate.BitSetType"/>
+		<many-to-one name="style" column="styleid" class="LoginStyle" lazy="false"/>
+		<many-to-one name="group" column="groupid" class="LoginGroup" lazy="false"/>
+		<!-- <many-to-one name="defaultReport" column="defaultreportid" class="com.mediagen.db.eval.web.Report"/> -->
+        <property name="defaultBrief" column="defaultbrief" type="long"/>
+        <property name="defaultSection" column="defaultsection" type="long"/>
+        <property name="nlaUserID" column="nlauserid" type="long"/>
+        <property name="nlaPassword" column="nlapassword" type="string"/>
+        <property name="timeout" column="timeout" type="long"/>
+        <property name="attachment" column="attachment" type="boolean"/>
+		<property name="restrictNI" column="restrictni" type="boolean"/>
+        <one-to-one name="alert" class="LoginAlert" cascade="all"/>
+        <one-to-one name="archive" class="LoginArchive" cascade="all"/>
+        <one-to-one name="finance" class="LoginFinance" cascade="all"/>
+<!-- 		<set name="broadcastCompanies" table="loginbroadcastcompany" lazy="true">
+			<key column="loginid"/>
+			<many-to-many column="broadcastcompanyid" class="com.mediagen.db.eval.BroadcastCompany"/>
+		</set>
+		<set name="productionCompanies" table="loginproductioncompany" lazy="true">
+			<key column="loginid"/>
+			<many-to-many column="productioncompanyid" class="com.mediagen.db.eval.ProductionCompany"/>
+		</set>
+		<set name="genres" table="logingenre" lazy="true">
+			<key column="loginid"/>
+			<many-to-many column="genreid" class="com.mediagen.db.eval.Genre"/>
+		</set>
+		<set name="programmes" table="loginprogramme" lazy="true">
+			<key column="loginid"/>
+			<many-to-many column="programmeid" class="com.mediagen.db.eval.Programme"/>
+		</set>
+		<set name="programmeAccess" table="loginprogrammeaccess" lazy="true" inverse="true">
+			<key column="loginid"/>
+			<many-to-many column="programmeid" class="com.mediagen.db.eval.Programme"/>
+		</set>
+		<set name="topicAccess" table="logintopicaccess" lazy="true" inverse="true">
+			<key column="loginid"/>
+			<one-to-many class="com.mediagen.db.eval.web.LoginTopic"/>
+		</set> -->
+		<set name="briefs" table="loginbrief" lazy="true">
+			<key column="loginid"/>
+			<many-to-many column="briefid" class="com.mws.phoenix.db.brief.Brief"/>
+		</set>
+		<set name="clients" table="loginclient" lazy="true">
+			<key column="loginid"/>
+			<many-to-many column="clientid" class="com.mws.phoenix.db.brief.Client"/>
+		</set>
+		<set name="briefAccess" table="loginbriefaccess" inverse="true" lazy="true">
+			<key column="loginid"/>
+			<many-to-many column="briefid" class="com.mws.phoenix.db.brief.Brief"/>
+		</set>
+	</class>
+
+    <class name="LoginAlert" table="loginalert">
+		<id name="alertID" column="loginid" type="long">
+			<generator class="foreign">
+				<param name="property">login</param>
+			</generator>
+		</id>
+		<one-to-one name="login"/>
+		<property name="enabled" column="alertenabled" type="boolean"/>
+		<property name="html" column="html" type="boolean"/>
+        <property name="uploadTime" column="uploadtime" type="boolean"/>
+        <property name="lastSent" column="lastsent" type="timestamp"/>
+		<property name="template" column="template" type="string"/>
+        <property name="noContent" column="nocontent" type="boolean"/>
+        <property name="rss" column="rss" type="boolean"/>
+		<set name="emails" table="loginemail" lazy="false">
+			<key column="loginid"/>
+			<element column="email" type="string"/>
+		</set>
+		<set name="times" table="loginalerttime" lazy="false">
+			<key column="loginid"/>
+			<element column="alerttime" type="time"/>
+		</set>
+        <set name="briefs" table="alertbrief" cascade="all-delete-orphan" inverse="true" lazy="false">
+            <key column="loginid"/>
+            <one-to-many class="AlertBrief"/>
+        </set>
+        <set name="sourceTypes" table="loginalertsourcetype" cascade="all-delete-orphan" lazy="false">
+            <key column="loginid"/>
+            <many-to-many column="sourcetypeid" class="com.mws.phoenix.db.source.SourceType"/>
+        </set>
+        <set name="sourceCategories" table="loginalertsourcecategory" cascade="all-delete-orphan" lazy="false">
+            <key column="loginid"/>
+            <many-to-many column="categoryid" class="com.mws.phoenix.db.source.SourceCategory"/>
+        </set>
+    </class>
+
+    <class name="AlertBrief" table="loginalertbrief">
+        <id name="alertBriefID" column="alertbriefid" type="long">
+            <generator class="sequence">
+                <param name="sequence">loginalertbrief_alertbriefid_seq</param>
+            </generator>
+        </id>
+        <many-to-one name="login" column="loginid" class="Login"/>
+        <many-to-one name="brief" column="briefid" class="com.mws.phoenix.db.brief.Brief" lazy="false"/>
+        <set name="sortSections" table="loginalertbriefsortsection" lazy="false">
+            <key column="alertbriefid"/>
+            <many-to-many column="sortsectionid" class="com.mws.phoenix.db.brief.SortSection"/>
+        </set>
+    </class>
+
+    <class name="LoginArchive" table="loginarchive">
+		<id name="archiveID" column="loginid" type="long">
+			<generator class="foreign">
+				<param name="property">login</param>
+			</generator>
+		</id>
+		<one-to-one name="login"/>
+		<property name="enabled" column="archiveenabled" type="boolean"/>
+		<property name="includeOthers" column="includeothers" type="boolean"/>
+        <property name="lastSent" column="lastsent" type="timestamp"/>
+        <property name="created" column="archivecreated" type="timestamp"/>
+    </class>
+
+	<class name="LoginFinance" table="loginfinance">
+		<id name="financeID" column="loginid" type="long">
+			<generator class="foreign">
+				<param name="property">login</param>
+			</generator>
+		</id>
+		<one-to-one name="login"/>
+		<property name="enabled" column="financeenabled" type="boolean"/>
+		<property name="shareEnabled" column="shareenabled" type="boolean"/>
+		<list name="shares" table="loginshare" lazy="true" cascade="all-delete-orphan" inverse="false">
+			<key column="loginid"/>
+			<index column="shareorder"/>
+			<many-to-many column="shareid" class="com.mws.phoenix.db.shares.Share"/>
+		</list>
+	</class>
+
+	<class name="WebFolder" table="webfolder">
+		<id name="folderID" column="folderid" type="long">
+			<generator class="sequence">
+				<param name="sequence">webfolder_folderid_seq</param>
+			</generator>
+		</id>
+		<property name="folderName" column="foldername" type="string"/>
+		<property name="folderDesc" column="folderdesc" type="string"/>
+		<property name="folderSize" formula="item_count(folderID)"/>
+		<many-to-one name="creator" column="loginid" class="Login" lazy="false"/>
+		<many-to-one name="group" column="groupid" class="LoginGroup" lazy="false"/>
+		<set name="items" table="webfolderitem" lazy="true" inverse="true" cascade="all-delete-orphan">
+			<key column="folderid"/>
+			<one-to-many class="WebFolderItem"/>
+		</set>
+	</class>
+
+	<class name="WebFolderItem" table="webfolderitem">
+		<id name="itemID" column="itemid" type="long">
+			<generator class="sequence">
+			<param name="sequence">webfolderitem_itemid_seq</param>
+			</generator>
+		</id>
+		<many-to-one name="folder" column="folderid" class="WebFolder" lazy="false"/>
+		<many-to-one name="hit" column="hitid" class="com.mws.phoenix.db.despatch.Hit" lazy="false"/>
+		<many-to-one name="creator" column="loginid" class="Login" lazy="false"/>
+	</class>
+</hibernate-mapping>

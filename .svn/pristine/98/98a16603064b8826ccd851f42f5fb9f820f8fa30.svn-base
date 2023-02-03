@@ -1,0 +1,16 @@
+<Context path="/phoenix" docBase="phoenix" debug="99" reloadable="true">
+    <Logger className="org.apache.catalina.logger.FileLogger"
+               prefix="Phoenix_"
+               suffix=".log"
+            timestamp="true"/>
+
+    <Loader checkInterval="3"/>
+
+    <Resource name="mail/session" auth="Container" type="javax.mail.Session"/>
+    <ResourceParams name="mail/session">
+      <parameter>
+        <name>mail.smtp.host</name>
+        <value>localhost</value>
+      </parameter>
+    </ResourceParams>
+</Context>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+	<xsl:import href="string.xslf"/>
+
+	<!-- Templates to output Share prices in an alert -->
+	<!-- 
+	Usage:
+			...
+			<xsl:apply-templates select="shares"/>
+			...
+	 -->
+
+    <xsl:template match="shares">
+Company                                  Price       Day Change
+---------------------------------------- ----------- -----------------------
+<xsl:apply-templates select="share"/>
+    </xsl:template>
+	
+	<xsl:template match="share">
+<xsl:call-template name="justify">
+	<xsl:with-param name="value" select="@name"/>
+	<xsl:with-param name="width" select="40"/>
+	<xsl:with-param name="align" select="'left'"/>
+</xsl:call-template>
+<xsl:text> </xsl:text>
+<xsl:call-template name="justify">
+	<xsl:with-param name="value">
+		<xsl:value-of select="@prefix"/><xsl:value-of select="format-number(close, '#,##0.00')"/><xsl:value-of select="@suffix"/>
+	</xsl:with-param>
+	<xsl:with-param name="width" select="11"/>
+	<xsl:with-param name="align" select="'right'"/>
+</xsl:call-template>
+<xsl:text> </xsl:text>
+<xsl:call-template name="justify">
+	<xsl:with-param name="value">
+		<xsl:value-of select="@prefix"/><xsl:value-of select="format-number(change,'+#,##0.00;-#,##0.00')"/><xsl:value-of select="@suffix"/>
+	</xsl:with-param>
+	<xsl:with-param name="width" select="11"/>
+	<xsl:with-param name="align" select="'right'"/>
+</xsl:call-template>
+<xsl:text> </xsl:text>
+<xsl:call-template name="justify">
+	<xsl:with-param name="value">
+		<xsl:text>(</xsl:text><xsl:value-of select="format-number(percent,'+#,##0.00;-#,##0.00')"/><xsl:text>%)</xsl:text>
+	</xsl:with-param>
+	<xsl:with-param name="width" select="11"/>
+	<xsl:with-param name="align" select="'right'"/>
+</xsl:call-template>
+<xsl:value-of select="$n"/>
+	</xsl:template>
+ </xsl:stylesheet>

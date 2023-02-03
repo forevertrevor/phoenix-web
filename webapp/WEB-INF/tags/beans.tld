@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib version="2.0">
+    
+    <description>Phoenix Date Library</description>
+    <display-name>Phoenix Dates</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>dt</short-name>
+    <uri>http://mws-systems.co.uk/dates</uri>
+
+    <function>
+        <name>getString</name>
+        <function-class>com.mws.phoenix.web.functions.Beans</function-class>
+        <function-signature>java.lang.String getString(java.lang.Object, java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>toString</name>
+        <function-class>com.mws.phoenix.web.functions.Beans</function-class>
+        <function-signature>java.lang.String toString(java.lang.Object)</function-signature>
+    </function>
+    <function>
+        <name>classOf</name>
+        <function-class>com.mws.phoenix.web.functions.Beans</function-class>
+        <function-signature>java.lang.String classOf(java.lang.Object)</function-signature>
+    </function>
+
+</taglib>

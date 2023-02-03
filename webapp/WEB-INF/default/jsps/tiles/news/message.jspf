@@ -1,0 +1,7 @@
+<%@ taglib prefix="fn" uri="/WEB-INF/tags/formatting.tld" %>
+<%@ page language="java" %>
+<!-- Start of group message -->
+<div class="groupmessage">
+	${user.group.pressMessage}
+</div>
+<!-- End of group message -->

@@ -1,0 +1,26 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<html:xhtml/>
+<div class="info display">
+    <h2><fmt:message key="title.finances"/></h2>
+    <display:table name="finances" id="finance" pagesize="25"  requestURI="/action/admin-list?sorting=true" sort="list" export="true">
+    	<display:column titleKey="login.loginname" sortable="true" headerClass="sortable" media="html">
+	    	<html:link action="admin-user?loginID=${finance.login.loginID}">${finance.login.loginName}</html:link>
+    	</display:column>
+    	<display:column property="login.loginName" titleKey="login.loginname"  sortable="true" headerClass="sortable" media="pdf xml csv excel"/>
+	    <display:column property="login.userName"  titleKey="login.username" sortable="true" headerClass="sortable"/>
+    	<display:column                            titleKey="group.groupname"     sortable="true" headerClass="sortable" media="html">
+            <html:link action="admin-group?groupID=${finance.login.group.groupID}">${finance.login.group.groupName}</html:link>
+    	</display:column>
+    	<display:column property="group.groupName" titleKey="group.groupname" media="pdf xml csv excel"/>
+	    <display:column property="enabled"         titleKey="finance.enabled"   sortable="true" headerClass="sortable"/>
+	    <display:column property="shareEnabled"    titleKey="finance.share.enabled"   sortable="true" headerClass="sortable"/>
+    	<display:column                            titleKey="prompt.edit" media="html">
+	    	<html:link action="admin-finance?financeID=${finance.financeID}"><html:img altKey="prompt.edit" titleKey="prompt.edit" src="image?resource=edit16.gif"/></html:link>
+    	</display:column>
+    	<display:setProperty name="export.csv.filename" value="finances.csv"/>
+    	<display:setProperty name="export.excel.filename" value="finances.xls"/>
+    	<display:setProperty name="export.pdf.filename" value="financess.pdf"/>
+    </display:table>
+</div>

@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- Connection Properties -->
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+
+        <!-- Ed's Home Properties -->
+        <property name="hibernate.connection.url">jdbc:postgresql://178.62.82.57:5432/phoenixweb</property>
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">postgres</property>
+        
+        <!-- Hibernate properties -->
+        <property name="show_sql">true</property>
+        <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+        <property name="transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+        <!-- This property does not work in the xml config file. It must be placed in the hibernate.properties file -->
+        <!--<property name="hibernate.cglib.use_reflection_optimizer">false</property>-->
+
+        <!-- DBCP Properties -->
+        <property name="hibernate.dbcp.maxActive">100</property>
+		<property name="hibernate.dbcp.whenExhaustedAction">1</property>
+		<property name="hibernate.dbcp.maxWait">120000</property>
+		<property name="hibernate.dbcp.maxIdle">10</property>
+		<property name="hibernate.dbcp.ps.maxActive">100</property>
+		<property name="hibernate.dbcp.ps.whenExhaustedAction">1</property>
+		<property name="hibernate.dbcp.ps.maxWait">120000</property>
+		<property name="hibernate.dbcp.ps.maxIdle">100</property>
+
+        <!-- Hibernate Mapping Files -->
+        <mapping resource="com/mws/phoenix/db/source/source.hbm.xml"/>
+        <mapping resource="com/mws/phoenix/db/source/publication/publication.hbm.xml"/>
+        <mapping resource="com/mws/phoenix/db/source/rss/rss.hbm.xml"/>
+        <mapping resource="com/mws/phoenix/db/source/website/website.hbm.xml"/>
+        <mapping resource="com/mws/phoenix/db/source/broadcast/broadcast.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/article/article.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/article/cutting/cutting.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/article/rss/rss.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/article/webpage/webpage.hbm.xml"/>
+        <mapping resource="com/mws/phoenix/db/person/person.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/brief/brief.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/recipient/recipient.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/despatch/despatch.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/shares/shares.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/term/term.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/event/event.hbm.xml"/>
+		<mapping resource="com/mws/phoenix/db/admin/admin.hbm.xml"/>
+
+        <mapping resource="com/mws/phoenix/db/web/web.hbm.xml"/>
+    </session-factory>
+</hibernate-configuration>

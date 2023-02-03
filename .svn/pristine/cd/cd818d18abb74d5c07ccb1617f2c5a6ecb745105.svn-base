@@ -1,0 +1,87 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<html:xhtml/>
+<!-- News Item select form -->
+<div class="newsform">
+	<script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+    <html:javascript formName="newsForm" method="validateNews" cdata="false" staticJavascript="false" />
+    <script type="text/javascript" src='<html:rewrite href="script?resource=calendar.js"/>'></script>
+   	<script type="text/javascript" src='<html:rewrite href="script?resource=dynamicoptionlist.js"/>'"></script>
+	<script type="text/javascript">
+		var sections = new DynamicOptionList("sector","acct");
+		sections.addOptions("0", "<fmt:message key="sortsection.allsortsections"/>", "0");
+		<c:forEach var="brief" items="${user.briefAccess}">
+			sections.addOptions("${brief.briefID}", "<fmt:message key="sortsection.allsortsections"/>", "0");
+			<c:forEach var="section" items="${brief.sortSections}">
+				sections.addOptions("${brief.briefID}", "${section.sortSectionName}", "${section.sortSectionID}");
+				sections.addOptions("0", "${section.sortSectionName}", "${section.sortSectionID}");
+			</c:forEach>
+		</c:forEach>
+		sections.setDefaultOption("0","0");
+		sections.init("newsForm");
+	</script>
+	<html:messages name="mediagen.news.messages" id="msg" header="news.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+	<html:messages name="mediagen.news.errors" id="msg" header="news.errors.header" footer="errors.footer">
+		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var newsFormValidate = "mediagen.news."</script>
+	<div class="validate" id="mediagen.news.validate">
+	</div>
+	<html:form action="/news" method="get" styleId="newsform" onsubmit="return validateNews(this);">
+		<html:hidden property="action" value="newsform"/>
+		<table class="form">
+			<tr>
+				<th><fmt:message key="brief.brief" /></th>
+				<td>
+					<html:select onchange="sections.populate();" property="acct">
+						<option value="0"><fmt:message key="brief.allbriefs"/></option>
+						<html:optionsCollection name="user" property="briefAccess" label="briefName" value="briefID" />
+					</html:select>
+				</td>
+				<th><fmt:message key="sortsection.sortsection" /></th>
+				<td>
+					<html:select property="sector">
+						<script language="javascript">sectors.printOptions();</script>
+						<option value="0"><fmt:message key="sortsections.allsortsections"/></option>
+						<c:forEach var="brief" items="${user.briefAccess}">
+							<html:optionsCollection name="brief" property="sortSections" label="sortSectionName" value="sortSectionID" />
+						</c:forEach>
+					</html:select>
+				</td>
+			</tr>
+			<tr>
+				<th><fmt:message key="date.date" /></th>
+    			<td colspan="3">
+	                <!-- All on one line to avoid line break -->
+        			<a href='javascript:toggleRadio("dateType0")' class="nolink"><html:radio styleClass="radio" property="datetype" value="0" styleId="dateType0" />&nbsp;<fmt:message key="article.upload" />&nbsp;</a>
+					<a href='javascript:toggleRadio("dateType1")' class="nolink"><html:radio styleClass="radio" property="datetype" value="1" styleId="dateType1" />&nbsp;<fmt:message key="article.article" />&nbsp;</a>
+					<fmt:message key="date.between" />&nbsp;<html:text styleId="datefrom" styleClass="text" property="datefrom" size="15" /><input class="button" type="button" name="cmdDateFrom" value="..." onClick="calendar('datefrom', 'dd-mmm-yyyy');" />
+					<fmt:message key="date.and" />&nbsp;<html:text styleId="dateto" styleClass="text" property="dateto" size="15" /><input  class="button" type="button" name="cmdDateTo" value="..." onClick="calendar('dateto', 'dd-mmm-yyyy');" />				
+				</td>
+			</tr>
+			<tr>
+				<th><fmt:message key="article.summary" /></th>
+				<td>
+					<a href='javascript:toggleRadio("summary0")' class="nolink"><html:radio styleClass="radio" property="summary" value="0" styleId="summary0" />&nbsp;<fmt:message key="prompt.off" />&nbsp;</a>
+					<a href='javascript:toggleRadio("summary1")' class="nolink"><html:radio styleClass="radio" property="summary" value="1" styleId="summary1" />&nbsp;<fmt:message key="prompt.on" />&nbsp;</a>
+				</td>
+				<th><fmt:message key="search.search" /></th>
+				<td>
+					<html:text styleClass="text" property="search" />
+				</td>
+			</tr>
+			<tr>
+				<th></th>
+    			<td>
+					<html:submit styleClass="button">
+						<fmt:message key="prompt.refresh"/>
+					</html:submit>
+				</td>
+			</tr>
+		</table>
+	</html:form>
+</div>
+<!-- News Item select form end -->

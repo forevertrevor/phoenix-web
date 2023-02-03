@@ -1,0 +1,109 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="/WEB-INF/tags/query.tld" prefix="qry"%>
+<html:xhtml/>
+<div class="info">
+    <script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+    <html:javascript formName="styleForm" method="validateStyle" cdata="false" staticJavascript="false" />
+	<h2><fmt:message key="title.style"/> - ${styleForm.styleName}</h2>
+	<html:messages name="mediagen.style.messages" id="msg" header="style.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+    <html:messages name="mediagen.style.errors" id="msg" header="style.errors.header" footer="errors.footer">
+  		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var styleFormValidate = "mediagen.style."</script>
+    <div class="validate" id="mediagen.style.validate">
+	</div>
+	<html:form action="/admin-style" method="post"  onsubmit="return validateStyle(this);">
+		<input type="hidden" name="action" value="update" />
+    	<html:hidden property="styleID" />
+		<table>
+			<tr>
+				<th>
+					<fmt:message key="style.stylename"/>
+				</th>
+				<td>
+				    <c:choose>
+    				    <c:when test="${user.level ge globals.USER_INTERNAL}">
+   							<html:text size="55" property="styleName"/>
+						</c:when>
+						<c:otherwise>
+						    <html:hidden property="styleName"/>${styleForm.styleName}
+						</c:otherwise>
+					</c:choose>
+				</td>
+			</tr>
+            <tr>
+                <th><fmt:message key="style.folder"/></th>
+                <td><html:text size="20" property="folder"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.css"/></th>
+                <td><html:text size="20" property="css"/></td>
+            </tr>
+			<tr>
+        		<th></th><td><h3><fmt:message key="style.pages"/></h3></td>
+			</tr>
+            <tr>
+                <th><fmt:message key="style.homepage"/></th>
+                <td><html:text size="20" property="home"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.newspage"/></th>
+                <td><html:text size="20" property="news"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.evalpage"/></th>
+                <td><html:text size="20" property="evaluation"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.archivepage"/></th>
+                <td><html:text size="20" property="archive"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.branding"/></th>
+                <td><html:text size="10" property="brandingID"/></td>
+            </tr>
+			<tr>
+        		<th></th><td><h3><fmt:message key="style.templates"/></h3></td>
+			</tr>
+            <tr>
+                <th><fmt:message key="style.emailarticle.template"/></th>
+                <td><html:text size="20" property="emailArticle"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.emailsummary.template"/></th>
+                <td><html:text size="20" property="emailSummary"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.printsummary.template"/></th>
+                <td><html:text size="20" property="printSummary"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.printarticle.template"/></th>
+                <td><html:text size="20" property="printArticle"/></td>
+            </tr>
+			<tr>
+        		<th></th><td><h3><fmt:message key="style.pdf.flags"/></h3></td>
+			</tr>
+            <tr>
+                <th><fmt:message key="style.pdf.pagenumber"/></th>
+                <td><html:checkbox property="pageNumber"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="style.pdf.summary"/></th>
+                <td><html:checkbox property="summary"/></td>
+            </tr>
+            <tr>
+		        <th></th>
+				<td>
+					<html:submit><fmt:message key="prompt.update"/></html:submit>
+				</td>
+			</tr>
+		</table>
+	</html:form>
+</div>

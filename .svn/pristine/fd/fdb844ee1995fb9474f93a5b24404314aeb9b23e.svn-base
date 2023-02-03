@@ -1,0 +1,37 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="/WEB-INF/tags/query.tld" prefix="qry"%>
+<html:xhtml/>
+<script type="text/javascript" src="<html:rewrite href="/action/script?resource=validate.js"/>"></script>
+<script type="text/javascript" src='<html:rewrite href="/action/script?resource=tooltip.js"/>'></script>
+<html:javascript formName="hashForm" method="validateHash" cdata="false" staticJavascript="false" />
+<div class="info">
+	<h2><fmt:message key="title.autologin"/> - ${user.userName}</h2>
+	<html:messages name="mediagen.hash.messages" id="msg" header="hash.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+    <html:messages name="mediagen.hash.errors" id="msg" header="hash.errors.header" footer="errors.footer">
+   		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var hashFormValidate = "mediagen.hash."</script>
+	<div class="validate" id="mediagen.hash.validate">
+	</div>
+	<c:if test="${!empty hashForm.url}">
+        <fmt:message key="autologin.url"><fmt:param value="${hashForm.loginname}"/><fmt:param value="${hashForm.path}"/></fmt:message><br /><br />
+        <html:link href="${hashForm.url}"><b>${hashForm.url}</b></html:link><br /><br />
+	</c:if>
+	<html:form action="/admin-hash" method="post" onsubmit="return validateHash(this);">
+        <table class="form">
+            <c:if test="${user.level ge globals.USER_INTERNAL}">
+                <tr><th><fmt:message key="login.loginname"/></th><td><html:text property="loginname"/></td></tr>
+                <tr><th><fmt:message key="login.password"/></th><td><html:password property="password"/></td></tr>
+            </c:if>
+            <tr><th><html:img src="/action/image?resource=question.png" onmouseover="popUp(event, 'resourcetip');" onmouseout="popDown('resourcetip');" altKey="tip.alt" styleClass="icon"/>&nbsp;<fmt:message key="autologin.path"/></th><td><html:text property="path"/></td></tr>
+            <tr><th></th><td><html:submit><fmt:message key="prompt.create"/></html:submit></td></tr>
+        </table>
+       	<div class="tooltip" id="resourcetip"><fmt:message key="tip.resource.tip"/></div>
+    </html:form>
+</div>

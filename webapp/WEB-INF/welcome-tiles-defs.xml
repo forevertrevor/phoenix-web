@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN" "http://jakarta.apache.org/struts/dtds/tiles-config_1_1.dtd">
+<tiles-definitions>
+	<!-- This is the base layout for the welcome pages -->
+	<definition name=".welcome.base" path="/welcome/layout/welcome.jsp">
+		<put name="title" value="Phoenix"/>
+		<put name="header" value="/welcome/tiles/header.jsp"/>
+		<put name="info" value="${info}"/>
+		<put name="footer" value="/welcome/tiles/footer.jsp"/>
+	</definition>
+	<!-- Welcome Page -->
+	<definition name=".welcome.welcome" extends=".welcome.base">
+		<put name="title" value="Phoenix"/>
+		<put name="info" value="/welcome/info/xymedia.jsp"/>
+	</definition>
+	<!-- Password Reminder -->
+	<definition name=".welcome.remind" extends=".welcome.base">
+		<put name="title" value="Phoenix - Password Reminder"/>
+		<put name="info" value="/welcome/info/remind.jsp"/>
+	</definition>
+	<!-- Contact -->
+	<definition name=".welcome.contact" extends=".welcome.base">
+		<put name="title" value="Phoenix - Contact Us"/>
+		<put name="info" value="/welcome/info/contacts.jsp"/>
+	</definition>
+	<!-- About Us -->
+	<definition name=".welcome.about" extends=".welcome.base">
+		<put name="title" value="Phoenix - About Us"/>
+		<put name="info" value="/welcome/info/about.jsp"/>
+	</definition>
+	<!-- Monitoring -->
+	<definition name=".welcome.product" extends=".welcome.base">
+		<put name="title" value="Phoenix - Our Service"/>
+		<put name="info" value="/welcome/info/product.jsp"/>
+	</definition>
+	<!-- FAQ -->
+	<definition name=".welcome.faq" extends=".welcome.base">
+		<put name="title" value="Phoenix - Frequently Asked Questions"/>
+		<put name="info" value="/welcome/info/faq.jsp"/>
+	</definition>
+	<!-- Testimonials -->
+	<definition name=".welcome.testimonials" extends=".welcome.base">
+		<put name="title" value="Phoenix - Testimonials"/>
+		<put name="info" value="/welcome/info/testimonials.jsp"/>
+	</definition>
+	<!-- eClips -->
+	<definition name=".welcome.eclips" extends=".welcome.base">
+		<put name="title" value="Phoenix - eClips"/>
+		<put name="info" value="/welcome/info/eclips.jsp"/>
+	</definition>
+	<!-- Press Help -->
+	<definition name=".welcome.help" extends=".welcome.base">
+		<put name="title" value="Phoenix - Press Service Help"/>
+		<put name="info" value="/welcome/info/help.jsp"/>
+	</definition>
+	<!-- Evaluation Help -->
+	<!--
+	<definition name=".welcome.evalhelp" extends=".welcome.base">
+		<put name="title" value="Mediagen - Evaluation Service Help"/>
+		<put name="info" value="/welcome/info/evalhelp.jspf"/>
+	</definition>
+	-->
+	<!-- Programme Evaluation Help -->
+	<!-- 
+	<definition name=".welcome.proghelp" extends=".welcome.base">
+		<put name="title" value="Mediagen - Programme Evaluation Service Help"/>
+		<put name="info" value="/welcome/info/proghelp.jspf"/>
+	</definition>
+	-->
+	<!-- Blank definition 	<definition name=".welcome.[PageID]" extends=".welcome.base">		<put name="title" value="Mediagen - [PageName]"/>		<put name="info" value="/welcome/info/[PageInfo].jspf"/>	</definition>-->
+</tiles-definitions>

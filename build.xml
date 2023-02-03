@@ -1,0 +1,197 @@
+<project name="MWS Phoenix Web" basedir=".">
+	
+	<description>Ant build file for Phoenix Web Application</description>
+	
+	<target name="init">
+  		<tstamp/>
+
+	    <property file="./build.properties"/>
+
+		<!-- Libraries this project depends on -->
+		<property name="dir.lib" location="./lib"/>
+
+		<!-- Config this project depends on -->
+		<property name="dir.config" location="./config"/>
+
+		<!-- Executables this project depends on -->
+		<property name="dir.exe" location="./exe"/>
+
+		<!-- Location for the Documentation -->
+		<property name="dir.doc" value="./doc"/>
+
+		<!-- Location for the Java API Documentation -->
+		<property name="dir.apidoc" value="./apidoc"/>
+
+		<!-- Location of the source code -->
+		<property name="dir.src" value="./src"/>
+		
+		<!-- Location for the compiled code -->
+  		<property name="dir.build" value="./build"/>
+
+		<!-- Location for the released code -->
+  		<property name="dir.dist" value="./dist"/>
+
+		<property name="dir.master.dist" value="../mws-master/"/>
+		<property name="dir.core.dist" value="../mws-core/dist"/>
+		<property name="dir.datastore.dist" value="../data-store/dist"/>
+		<property name="dir.gui.dist" value="../mws-gui/dist"/>
+		<property name="dir.index.dist" value="../mws-index/dist"/>
+		<property name="dir.services.dist" value="../mws-services/dist"/>
+		<property name="dir.segmentation.dist" value="../mws-segmentation/dist"/>
+		<property name="dir.template.dist" value="../mws-template/dist"/>
+		<property name="dir.data.dist" value="../phoenix-data/dist"/>
+		<property name="dir.shared.dist" value="../phoenix-shared/dist"/>
+		
+		<property file="./project.properties"/>
+		<property file="./build.properties"/>
+
+		<!-- Classpath for javac and javadoc -->
+		<path id="classpath">
+        	<pathelement path="${class.path}"/>
+		</path>
+
+		<!-- Location and name of the jar file -->
+		<property name="file.war" value="${dir.dist}/${app.name}-${app.version}.war"/>
+	</target>
+
+	<target name="clean" depends="init" description="clears the work and distribution directories">
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="${dir.build}"/>
+			<fileset dir="${dir.dist}"/>
+		</delete>
+	</target>
+
+	<target name="compile" depends="init" description="Compiles the source code files into the build directory">
+    	<mkdir dir="${dir.build}"/>
+    	<javac srcdir="${dir.src}" destdir="${dir.build}" debug="on" optimize="off" deprecation="off" target="1.7" includeantruntime="false">
+			<classpath refid="classpath"/>
+		</javac>
+        <copy todir="${dir.build}">
+            <fileset dir="${dir.src}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+  	</target>
+
+	<target name="release" depends="compile" description="Build war file">
+		<war destfile="${file.war}" >
+			<metainf file="./descriptors/context.xml" />
+			<lib dir="${dir.lib}">
+			    <exclude name="servlet-api.jar"/>
+			    <exclude name="jsp-api.jar"/>
+				<exclude name="mail.jar"/>
+				<exclude name="activation.jar"/>
+			</lib>
+			<classes dir="${dir.build}">
+			</classes>
+			<fileset dir="./webapp"/>
+		</war>
+	</target>
+
+	<target name="local-deploy" depends="release" description="Copies war file to local Tomcat">
+		<copy todir="${tomcat.home}/webapps" file="${file.war}"/>
+	</target>
+	
+	<!--	
+	<target name="init">
+		<tstamp/>
+	</target>
+	
+	<target name="clean" description="clears the work and distribution directories">
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="${build.dir}"/>
+			<fileset dir="${dist.dir}"/>
+		</delete>
+	</target>
+
+	<target name="compile" depends="init" description="compiles java source files">
+		<mkdir dir="${build.dir}"/>
+		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" debuglevel="lines,source,vars" target="1.4" source="1.4"/>
+		<copy todir="${build.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.xml"/>
+				<include name="**/*.properties"/>
+				<include name="**/*.gif"/>
+			</fileset>
+		</copy>
+	</target>
+
+	
+	
+	<target name="package" depends="compile" description="creates jar file packages">
+		<mkdir dir="${dist.dir}"/>
+		<mkdir dir="${dist.dir}/lib"/>
+	</target>
+
+	<target name="local-deploy" depends="package" description="Deploy to local directory">
+		<mkdir dir="${dist.dir}"/>
+
+		<copy todir="${dist.dir}/${web.name}">
+			<fileset dir="${webapp.dir}"/>
+		</copy>
+
+		<copy todir="${dist.dir}/descriptor">
+			<fileset dir="${desc.dir}"/>
+		</copy>
+
+		<copy todir="${dist.dir}/${web.name}/WEB-INF/lib" flatten="true" preservelastmodified="true">
+			<fileset dir="${java.lib}">
+				<include name="hibernate-2.1/hibernate2.jar"/>
+				<include name="hibernate-2.1/lib/dom4j-1.4.jar"/>
+				<include name="hibernate-2.1/lib/commons-logging-1.0.3.jar"/>
+				<include name="hibernate-2.1/lib/commons-collections-2.1.jar"/>
+				<include name="hibernate-2.1/lib/cglib-full-2.0.1.jar"/>
+				<include name="hibernate-2.1/lib/jta.jar"/>
+				<include name="hibernate-2.1/lib/odmg-3.0.jar"/>
+                <include name="hibernate-2.1/lib/ehcache-0.7.jar"/> 
+                <include name="hibernate-2.1/lib/c3p0-0.8.4.5.jar"/> 
+                <include name="hibernate-2.1/lib/commons-dbcp-1.1.jar"/>         
+                <include name="hibernate-2.1/lib/commons-pool-1.1.jar"/>         
+				<include name="jakarta-log4j-1.2.8/dist/lib/log4j-1.2.8.jar"/>
+				<include name="jakarta-struts-1.1/lib/*.jar"/>
+				<include name="jakarta-taglibs-standard-1.1.1/lib/jstl.jar"/>
+				<include name="jakarta-taglibs-standard-1.1.1/lib/standard.jar"/>
+				<include name="displaytag-1.0/displaytag-1.0.jar"/>
+				<include name="commons-lang-2.0/commons-lang-2.0.jar"/>
+                <include name="jfreechart-0.9.21/lib/jcommon-0.9.6.jar"/>
+                <include name="jfreechart-0.9.21/jfreechart-0.9.21.jar"/>
+                <include name="fop-0.20.5/build/fop.jar"/>
+                <include name="fop-0.20.5/lib/avalon-framework-cvs-20020806.jar"/>
+                <include name="fop-0.20.5/lib/batik.jar"/>
+                <include name="iText-1.4.1/itext-1.4.1.jar"/>         
+			</fileset>
+		</copy>
+		<copy todir="${dist.dir}/${web.name}/WEB-INF/lib" file="${core.dir}/dist/mws-core.jar"/>
+		<copy todir="${dist.dir}/${web.name}/WEB-INF/lib" file="${data.dir}/dist/mws-phoenix-db.jar"/>
+		
+		<copy todir="${dist.dir}/${web.name}/WEB-INF/classes">
+			<fileset dir="${build.dir}">
+				<include name="com/mws/phoenix/db/web/"/>
+				<include name="com/mws/phoenix/web/"/>
+                <include name="org/apache/commons/mail/ByteArrayDataSource.class"/>         
+			</fileset>
+		</copy>
+
+
+	<copy todir="${dist.dir}/common/lib" flatten="true" preservelastmodified="true">
+			<fileset dir="${java.lib}">
+				<include name="postgres-jdbc-7.4.214/pg74.214.jdbc3.jar"/>
+				<include name="javamail-1.3.1/mail.jar"/>
+				<include name="jaf-1.0.2/activation.jar"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="develop-deploy" depends="local-deploy" description="deploy to development server">
+		<copy todir="${develop.common.dir}">
+			<fileset dir="${dist.dir}/common"/>
+		</copy>
+		<copy todir="${develop.desc.dir}">
+			<fileset dir="${dist.dir}/descriptor"/>
+		</copy>
+		<copy todir="${develop.dir}">
+			<fileset dir="${dist.dir}/${web.name}"/>
+		</copy>
+	</target>
+	-->
+</project>

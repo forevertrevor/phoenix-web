@@ -1,0 +1,62 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="/WEB-INF/tags/logic.tld" prefix="lg"%>
+<!-- Start of buttons -->
+<div class="buttons menubar centre">
+	<c:choose>
+		<c:when test="${fn:length(selectedForm.selected) gt 0}">
+			<span class="item"><html:img src="image?resource=folder-full16.gif" altKey="selected.items" titleKey="selected.some" styleClass="icon"/> ${fn:length(selectedForm.selected)}</span>
+		</c:when>
+		<c:otherwise>
+			<span class="item"><html:img src="image?resource=folder-empty16.gif" altKey="selected.empty" titleKey="selected.none" styleClass="icon"/> 0</span>
+		</c:otherwise>
+	</c:choose>
+	<span class="item"><html:link action="select?clear=true"><fmt:message key="menubar.clear"/></html:link></span>
+	<c:forEach var="tool" items="${globals.tools}">
+        <c:if test="${lg:isSet(user.controls, tool.value)}">
+            <c:choose>
+                <c:when test="${fn:startsWith(tool.label, 'print')}">
+					<c:if test="${empty print}">
+						<span class="section"><html:img src="image?resource=print16.gif" altKey="menubar.print" titleKey="menubar.print" styleClass="icon"/></span>
+						<c:set var="print" value="true"/>
+					</c:if>
+		    		<span class="item"><html:link action="tool?fwd=${tool.label}&action=${tool.label}" target="_blank"><fmt:message key="menubar.${tool.label}"/></html:link></span>
+			    </c:when>
+                <c:when test="${fn:startsWith(tool.label, 'email')}">
+					<c:if test="${empty email}">
+						<span class="section"><html:img src="image?resource=email16.gif" altKey="menubar.email" titleKey="menubar.email" styleClass="icon"/></span>
+						<c:set var="email" value="true"/>
+					</c:if>
+		    		<span class="item"><html:link action="tool?fwd=${tool.label}"><fmt:message key="menubar.${tool.label}"/></html:link></span>
+			    </c:when>
+                <c:when test="${fn:startsWith(tool.label, 'fax')}">
+					<c:if test="${empty fax}">
+						<span class="section"><html:img src="image?resource=fax16.gif" altKey="menubar.faxback" titleKey="manubar.faxback" styleClass="icon"/></span>
+						<c:set var="fax" value="true"/>
+					</c:if>
+		    		<span class="item"><html:link action="tool?fwd=${tool.label}"><fmt:message key="menubar.${tool.label}"/></html:link></span>
+			    </c:when>
+    		    <c:otherwise>
+	    	        <span class="item"><html:link action="tool?fwd=${tool.label}"><fmt:message key="menubar.${tool.label}"/></html:link></span>
+    		    </c:otherwise>
+    	    </c:choose>
+    	</c:if>
+	</c:forEach>
+	<c:if test="${lg:isSet(user.controls, globals.CONTROL_FOLDERS)}">
+		<span class="section"><html:img src="image?resource=folders16.gif" altKey="folder.folders" titleKey="folder.folders" styleClass="icon"/></span>
+   		<span class="item">
+   			<html:form action="/items-add" method="get">
+				<html:hidden property="command" value="add"/>
+				<html:select property="folderid">
+					<html:option value="0" key="folder.select.folder" />
+					<html:optionsCollection name="user" property="group.folders" label="folderName" value="folderID"/>
+				</html:select>
+				<html:image altKey="menubar.add.to.folder" titleKey="menubar.add.to.folder" src="image?resource=add16.gif" styleClass="icon"/>
+			</html:form>
+		</span>
+	</c:if>
+</div>
+<!-- End of buttons -->

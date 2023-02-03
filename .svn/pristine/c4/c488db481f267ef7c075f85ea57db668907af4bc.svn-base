@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib version="2.0">
+    
+    <description>Phoenix Date Library</description>
+    <display-name>Phoenix Dates</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>dt</short-name>
+    <uri>http://mws-systems.co.uk/dates</uri>
+
+    <function>
+        <name>getDate</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getDate()</function-signature>
+    </function>
+
+    <function>
+        <name>getDateWithFormat</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getDate(java.lang.String)</function-signature>
+    </function>
+
+    <function>
+        <name>getRelativeDate</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getRelativeDate(java.lang.String, int)</function-signature>
+    </function>
+
+    <function>
+        <name>getRelativeDateWithFormat</name>
+        <function-class>com.mediagen.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getRelativeDate(java.lang.String, java.lang.String, int)</function-signature>
+    </function>
+
+    <function>
+        <name>getFirstDate</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getFirstDate(java.lang.String)</function-signature>
+    </function>
+
+    <function>
+        <name>getFirstDateWithFormat</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getFirstDate(java.lang.String, java.lang.String)</function-signature>
+    </function>
+
+    <function>
+        <name>getLastDate</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getLastDate(java.lang.String)</function-signature>
+    </function>
+
+    <function>
+        <name>getLastDateWithFormat</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getLastDate(java.lang.String, java.lang.String)</function-signature>
+    </function>
+
+    <function>
+        <name>getFirstRelativeDate</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getFirstRelativeDate(java.lang.String, int)</function-signature>
+    </function>
+
+    <function>
+        <name>getFirstRelativeDateWithFormat</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getFirstRelativeDate(java.lang.String, java.lang.String, int)</function-signature>
+    </function>
+
+    <function>
+        <name>getLastRelativeDate</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getLastRelativeDate(java.lang.String, int)</function-signature>
+    </function>
+
+    <function>
+        <name>getLastRelativeDateWithFormat</name>
+        <function-class>com.mws.phoenix.web.functions.Dates</function-class>
+        <function-signature>java.lang.String getLastRelativeDate(java.lang.String, java.lang.String, int)</function-signature>
+    </function>
+</taglib>

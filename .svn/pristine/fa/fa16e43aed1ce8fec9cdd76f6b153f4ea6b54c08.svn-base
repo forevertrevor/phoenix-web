@@ -1,0 +1,365 @@
+package com.mws.phoenix.web.press;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import com.mws.db.ValueObjectComparator;
+import com.mws.phoenix.db.despatch.Hit;
+import com.mws.phoenix.db.web.Login;
+import com.mws.phoenix.web.WebUtilities;
+import com.mws.phoenix.web.display.DisplayTagStore;
+import com.mws.util.date.DateUtilities;
+
+public class ItemsHelper {
+
+	private static final SimpleDateFormat eClipsFormat = new SimpleDateFormat("ddMMyyyy");
+	private static final SimpleDateFormat newsFormFormat = new SimpleDateFormat("dd-MMM-yyyy");
+	
+	private static final Pattern pattern = Pattern.compile("NLAArticleID.*?Value='([0-9]*)'");
+	
+	// DisplayTag Column Order for News and Archive
+	public static final int NEWS_SOURCE = 0;
+	public static final int NEWS_HEADLINE = 1;
+	public static final int NEWS_DATE = 2;
+	public static final int NEWS_SECTION = 4;
+	
+	public static final String[] SOURCE_SORT = new String[] {"article.attribution"};
+	public static final String[] HEADLINE_SORT = new String[] {"article.headline"};
+	public static final String[] DATE_SORT = new String[] {"article.articleDate"};
+	public static final String[] SECTION_SORT = new String[] {"brief.briefName"};
+
+	public static final String[][] newsSort = new String[][] {SOURCE_SORT, HEADLINE_SORT, DATE_SORT, null,SECTION_SORT};
+
+	public static String buildQuery(Login user, NewsForm newsform, String mode, String object) {
+    	return buildQuery(user, newsform, mode, object, "0");
+    }
+
+    public static String buildQuery(Login user, NewsForm newsform, String mode, String object, String eClipsList) {
+    	StringBuffer query = new StringBuffer();
+    	if (mode.equals("/folder")) {
+        	query.append(buildFolderSelect(object));
+        } else {
+        	query.append(buildNewsSelect(object));
+        }
+        
+    	query.append(" where");
+    	query.append(" login.loginID = ");
+    	query.append(user.getLoginID());
+
+    	if (mode.equals("/folder")) {
+    		query.append(buildFolderWhere(newsform));
+    	} else {
+    		query.append(buildNewsWhere(newsform));
+    		if (mode.equals("/archive")) {
+    			query.append(buildArchiveWhere(user.getArchive().getCreated(), user.getArchive().getIncludeOthers().booleanValue()));
+    		}
+    	}
+    	query.append(buildSourceTypeWhere(newsform));
+    	query.append(buildSourceCategoryWhere(newsform));
+
+    	query.append(buildDateRange(newsform));
+    	
+        if (!newsform.getSearch().equals("")) {
+        	query.append(buildSearch(newsform, user, eClipsList));
+        }
+        
+        //NB Cannot have ORDER BY section because "for SELECT DISTINCT, ORDER BY expressions must appear in select list"
+        
+        return query.toString();
+    }
+	
+	private static String buildNewsSelect(String object) {
+    	if (object.equals("hit")) {
+    		return "select distinct hit from Login as login inner join login.briefAccess as brief inner join brief.sortSections as section, Hit hit inner join hit.hitSortSections as hss inner join hit.article as article left join hit.alsoMentioned as also";
+    	} else {
+    		return "select distinct hss from Login as login inner join login.briefAccess as brief inner join brief.sortSections as section, Hit hit inner join hit.hitSortSections as hss inner join hit.article as article left join hit.alsoMentioned as also";
+    	}
+    }
+
+    private static String buildFolderSelect(String object) {
+    	if (object.equals("hit")) {
+    		return "select distinct hit from Login as login inner join login.group.folders as folder inner join folder.items as wfi inner join wfi.hit as hit inner join hit.article as article left join hit.alsoMentioned as also";
+    	} else {
+    		return "select distinct wfi from Login as login inner join login.group.folders as folder inner join folder.items as wfi inner join wfi.hit as hit inner join hit.article as article left join hit.alsoMentioned as also";
+    	}
+    }
+
+    private static String buildNewsWhere(NewsForm newsform) {
+    	StringBuffer query = new StringBuffer();
+
+    	query.append(" and hss.sortSection = section");
+    	
+    	if (!newsform.getAcct().equals("0")) {
+            query.append(" and brief.briefID = ");
+            query.append(newsform.getAcct());
+        }
+        
+        if (!newsform.getSector().equals("0")) {
+            query.append(" and section.sortSectionID = ");
+            query.append(newsform.getSector());
+        }
+        
+        return query.toString();
+    }
+
+    private static String buildFolderWhere(NewsForm newsform) {
+    	StringBuffer query = new StringBuffer();
+
+    	if (!newsform.getAcct().equals("0")) {
+            query.append(" and folder.folderID = ");
+            query.append(newsform.getAcct());
+        }
+        
+        return query.toString();
+    }
+
+    private static String buildArchiveWhere(Date createdDate, boolean includeOthers) {
+    	StringBuffer query = new StringBuffer();
+    	SimpleDateFormat arch = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss");
+        String archFrom = arch.format(createdDate); 
+        if (!includeOthers) {
+        	query.append(" and hss.hit.article.nlaID is not null");
+        }
+        query.append(" and hss.hit.hitDate > '" + archFrom + "'");
+        return query.toString();
+    }
+    
+    private static String buildSourceTypeWhere(NewsForm newsform) {
+    	if (newsform.getSourcetype().length == 1 && newsform.getSourcetype()[0].equals("0")) {
+    		return "";
+    	}
+    	
+    	StringBuffer query = new StringBuffer();
+    	query.append(" and ");
+    	if (newsform.getSourcetype().length > 0) {
+        	query.append("article.source.sourceType.sourceTypeID in (");
+        	query.append(makeInList(newsform.getSourcetype()));
+            query.append(")");
+    	}
+    	return query.toString();
+    }
+
+    private static String buildSourceCategoryWhere(NewsForm newsform) {
+    	if (newsform.getSourcecategory().length == 0 || (newsform.getSourcecategory().length == 1 && newsform.getSourcecategory()[0].equals("0"))) {
+    		return "";
+    	}
+    	
+    	StringBuffer query = new StringBuffer();
+    	query.append(" and ");
+    	if (newsform.getSourcecategory().length > 0) {
+        	query.append("article.source.sourceCategory.categoryID in (");
+        	query.append(makeInList(newsform.getSourcecategory()));
+        	query.append(")");
+    	}
+    	return query.toString();
+    }
+
+    private static String buildDateRange(NewsForm newsform) {
+    	StringBuffer query = new StringBuffer();
+    	String datefrom = newsform.getDatefrom();
+        String dateto = newsform.getDateto();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
+        try {
+            Date to = DateUtilities.add(sdf.parse(dateto),Calendar.DATE, 1);
+            dateto = sdf.format(to);
+        } catch (ParseException e) { }
+
+        if (newsform.getDatetype().equals("0")) {
+            query.append(" and hit.hitDate between '" + datefrom + "' and '" + dateto + "'");
+        } else if (newsform.getDatetype().equals("1")) {
+            query.append(" and article.articleDate >= '" + datefrom + "' and  article.articleDate < '" + dateto + "'");
+        }
+        return query.toString();
+    }
+
+    private static String buildSearch(NewsForm newsform, Login user, String eClipsList) {
+
+    	StringBuffer query = new StringBuffer();
+        String search = newsform.getSearch();
+        search = search.replaceAll("'", "''");
+        query.append(" and (");
+        query.append("upper(article.headline) like '%" + search.toUpperCase() + "%'");
+        // NB replaced by line below to increase query execution speed
+        //query.append(" or also.article.headline ilike '%" + search + "%'");
+        query.append(" or also.hitID in (select h.hitID from Hit h inner join h.article a where");
+        query.append(" upper(a.headline) like '%" + search.toUpperCase() + "%'");
+    	if (!eClipsList.equals("0")) {
+        	query.append(" or a.nlaID in (" + eClipsList + ")");
+        }
+    	query.append(")");
+        query.append(" or ((hit.summary is null or hit.summary = '') and upper(hit.article.summary) like '%" + search.toUpperCase() + "%')");
+        query.append(" or upper(hit.summary) like '%" + search.toUpperCase() + "%'");
+    	if (!eClipsList.equals("0")) {
+        	query.append(" or article.nlaID in (" + eClipsList + ")");
+        }
+        query.append(")");
+        return query.toString();
+    }
+    
+    public static String buildeClipsList(NewsForm newsform, Login user) {
+    	if (user.getArchive().getEnabled().booleanValue() && newsform.isFullText()) {
+    		try {
+    			String[] ids = searchArchive(user.getNlaUserID(), newsform.getSearch(), newsFormFormat.parse(newsform.getDatefrom()), newsFormFormat.parse(newsform.getDateto()));
+    			System.out.println("Number of Hits=" + ids.length);
+    			if (ids.length > 0) {
+    	    		StringBuffer sb = new StringBuffer();
+    				for (int i = 0; i < ids.length; i++) {
+    					if (i != 0) {
+    						sb.append(",");
+    					}
+    					sb.append(ids[i]);
+    				}
+    				return sb.toString();
+    			} else {
+    				return "0";
+    			}
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    			return "0";
+    		} catch (ParseException e) {
+    			e.printStackTrace();
+    			return "0";
+    		}
+    	} else {
+    		 return "0";
+    	}
+    }
+
+	public static String[] searchArchive(Long userID, String term, Date dateFrom, Date dateTo) throws IOException {
+		//Construct the URL
+		URL url = buildURL(userID, term, dateFrom, dateTo);
+		System.out.println("Querying Archive: " + url);
+		StringBuffer xml = readResponse(url);
+
+		//Extract the nlaIDs
+		String[] ids = extractIDs(xml);
+
+		return ids;
+	}
+	
+	private static URL buildURL(Long userID, String term, Date dateFrom, Date dateTo) throws MalformedURLException {
+		StringBuffer sb = new StringBuffer();
+		sb.append(WebUtilities.eClipsAPI);
+		sb.append("SearchArchive?UserID=");
+		sb.append(userID);
+		sb.append("&SearchTerm=");
+		try {
+			sb.append(URLEncoder.encode(term, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			//This is never going to happen
+		}
+		sb.append("&StartDate=");
+		sb.append(eClipsFormat.format(dateFrom));
+		sb.append("&EndDate=");
+		sb.append(eClipsFormat.format(dateTo));
+		sb.append("&Format=XML");
+		return new URL(sb.toString());
+	}
+
+	private static StringBuffer readResponse(URL url) throws IOException {
+		StringBuffer sb = new StringBuffer();
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(url.openStream()));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line);
+				sb.append("\n");
+			}
+			return sb;
+		} finally {
+			try {
+				reader.close();
+			} catch (Throwable t) { 
+
+			}
+		}
+	}
+
+	private static String[] extractIDs(StringBuffer xml) {
+		List<String> ids = new ArrayList<String>();
+		Matcher matcher = pattern.matcher(xml);
+		while (matcher.find()) {
+			ids.add(matcher.group(1));
+		}
+		return ids.toArray(new String[ids.size()]);
+	}
+	
+	public static List sortHits(Collection items, String mode, HttpSession session, HttpServletRequest request) {
+		List list = new ArrayList(items);
+		DisplayTagStore dts = getDisplayTagStore(session, request, mode);
+		String[] order = getOrder(dts, mode);
+		try {
+			ValueObjectComparator comp = new ValueObjectComparator(Hit.class, order);
+			Collections.sort(list, comp);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+	
+	/**
+	 * Returns the property of the column the results should be 
+	 * sorted by
+	 * 
+	 * @param dts The DisplayTagStore
+	 * @param mode the mode
+	 * @return the column index
+	 */
+	public static String[] getOrder(DisplayTagStore dts, String mode) {
+		String sort = dts.getParam("s");
+		if (sort == null) {
+			if (mode.equals("/folder")) {
+				return newsSort[NEWS_DATE];
+			} else {
+				return newsSort[NEWS_SECTION];
+			}
+		} else {
+			return newsSort[Integer.parseInt(sort)];
+		}
+	}
+	
+	public static DisplayTagStore getDisplayTagStore(HttpSession session, HttpServletRequest request, String mode) {
+		DisplayTagStore dts = (DisplayTagStore)session.getAttribute("displayTagStore" + mode);
+		if (dts == null) {
+		    dts = new DisplayTagStore();
+		    session.setAttribute("displayTagStore" + mode, dts);
+		}
+		
+		// Save the displaytag parameters. We may need them later
+		dts.storeParams(request);
+		
+		return dts;
+	}
+
+    private static String makeInList(String[] list) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < list.length; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(list[i]);
+        }
+        return sb.toString();
+    }
+}

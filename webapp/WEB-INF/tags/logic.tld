@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib version="2.0">
+    
+    <description>Phoenix Logic Library</description>
+    <display-name>Phoenix Logic</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>lg</short-name>
+    <uri>http://mws-systems.co.uk/logic</uri>
+
+    <function>
+        <name>bitAnd</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>int bitAnd(int, int)</function-signature>
+    </function>
+
+    <function>
+        <name>bitOr</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>int bitOr(int, int)</function-signature>
+    </function>
+
+    <function>
+        <name>bitXor</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>int bitXor(int, int)</function-signature>
+    </function>
+
+    <function>
+        <name>isSet</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>boolean isSet(java.util.BitSet, int)</function-signature>
+    </function>
+
+    <function>
+        <name>contains</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>boolean contains(java.lang.String, java.lang.String)</function-signature>
+    </function>
+    
+    <function>
+        <name>matches</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>boolean matches(java.lang.String, java.lang.String)</function-signature>
+    </function>
+    
+    <function>
+    	<name>collectionIncludes</name>
+    	<function-class>com.mws.phoenix.web.functions.Logic</function-class>
+    	<function-signature>boolean collectionIncludes(java.util.Collection, java.lang.Object)</function-signature>
+    </function>
+    
+    <function>
+    	<name>arrayIncludes</name>
+    	<function-class>com.mws.phoenix.web.functions.Logic</function-class>
+    	<function-signature>boolean arrayIncludes(java.lang.Object[], java.lang.Object)</function-signature>
+   	</function>
+
+    <function>
+		<!-- String.contains() method -->
+        <name>strContains</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>boolean strContains(java.lang.String, java.lang.String)</function-signature>
+    </function>
+
+    <function>
+		<!-- String.startsWith() method -->
+        <name>strStartsWith</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>boolean strStartsWith(java.lang.String, java.lang.String)</function-signature>
+    </function>
+
+    <function>
+		<!-- String.endsWith() method -->
+        <name>strEndsWith</name>
+        <function-class>com.mws.phoenix.web.functions.Logic</function-class>
+        <function-signature>boolean strEndsWith(java.lang.String, java.lang.String)</function-signature>
+    </function>
+
+</taglib>

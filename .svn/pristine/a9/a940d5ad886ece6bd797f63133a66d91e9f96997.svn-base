@@ -1,0 +1,88 @@
+package com.mws.phoenix.web.listener;
+
+import javax.naming.InitialContext;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.mail.Session;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.mws.phoenix.web.alert.EmailAlerter;
+
+/**
+ * This class is registered as a Listener in the web.xml file.
+ * It listens for when the Servlet Context is Initialized or Destroyed.
+ * It looks up a Mail Session from the JNDI Server and places a reference 
+ * to it in application scope so that all actions can get connections to 
+ * the session from it. When the context is destroyed it removes it from the
+ * application scope.
+ * 
+ * @author Ed Webb
+ */
+public class MailListener implements ServletContextListener {
+
+    Log log = LogFactory.getLog(MailListener.class);
+    
+	/**
+	 * Looks up the Mail Session in the JNDI server and place a reference
+	 * to it in the ServletContext object (application scope)
+	 * @param servletContextEvent the {@link ServletContextEvent} this class is listening for 
+	 */
+	public void contextInitialized(ServletContextEvent servletContextEvent) {
+
+        log.info("Initializing Mail Session");
+
+        ServletContext application = servletContextEvent.getServletContext();
+		Session mail = null;
+		try {
+			InitialContext ic = new InitialContext();
+			String ctxName = application.getInitParameter("jndi.mail");
+			System.out.println(ic.lookup(ctxName));
+			mail = (Session)ic.lookup(ctxName);
+			if (mail == null) {
+				log.error("Mail Session not created - null returned");
+			} else {
+				application.setAttribute("mail", mail);
+                log.info("Mail Session created successfully");
+
+//                log.info("Initializing Email Alerter");
+//                EmailAlerter alerter = new EmailAlerter(application, mail);
+//				application.setAttribute("alerter", alerter);
+//				alerter.start();
+//
+//                log.info("Email Alerter started successfully");
+			}
+		} catch (Throwable t) {
+			log.error("Mail Session not created - threw exception", t);
+		}
+	}
+
+	/**
+	 * Removes the reference to the Mail Session from the ServletContext object
+	 * (application scope)
+	 * @param servletContextEvent the {@link ServletContextEvent} this class is listening for
+	 */
+	public void contextDestroyed(ServletContextEvent servletContextEvent) {
+		ServletContext application = servletContextEvent.getServletContext();
+		application.removeAttribute("mail");
+		EmailAlerter alerter = (EmailAlerter)application.getAttribute("alerter");
+		if (alerter != null) {
+		    alerter.setStop(true);
+		    alerter.interrupt();
+		    try {
+		        alerter.join(60000);
+		        if (alerter.isAlive()) {
+		            log.warn("Email Alerter not shut down within 1 minute");
+		        } else {
+		            log.info("Email Alerter successfully shut down");
+		        }
+		    } catch (InterruptedException e) {
+	            log.error("Email Alerter threw Interrupted Exception", e);
+		    }
+        }
+
+		log.info("Mail Session destroyed successfully");
+	}
+}

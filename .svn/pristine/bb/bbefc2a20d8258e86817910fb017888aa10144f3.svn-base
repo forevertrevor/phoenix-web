@@ -1,0 +1,96 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="/WEB-INF/tags/query.tld" prefix="qry"%>
+<html:xhtml/>
+<script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+<html:javascript formName="groupForm" method="validateGroup" cdata="false" staticJavascript="false" />
+<div class="info">
+	<h2><fmt:message key="title.group"/> - ${groupForm.groupName}</h2>
+	<html:messages name="mediagen.group.messages" id="msg" header="group.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+    <html:messages name="mediagen.group.errors" id="msg" header="group.errors.header" footer="errors.footer">
+   		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var groupFormValidate = "mediagen.group."</script>
+	<div class="validate" id="mediagen.group.validate">
+	</div>
+	<html:form action="/admin-group" method="post" onsubmit="return validateGroup(this);">
+		<input type="hidden" name="action" value="update" />
+		<html:hidden property="groupID" />
+		<table class="form">
+			<tr>
+				<th>
+					<fmt:message key="group.groupname"/>
+				</th>
+				<td>
+				    <c:choose>
+    				    <c:when test="${user.level ge globals.USER_INTERNAL}">
+   							<html:text size="55" property="groupName"/>
+						</c:when>
+						<c:otherwise>
+    					    <html:hidden property="groupName"/>${groupForm.groupName}
+						</c:otherwise>
+					</c:choose>
+				</td>
+			</tr>
+			<tr>
+				<th>
+    				<fmt:message key="group.pressmessage"/>
+				</th>
+				<td>
+					<html:textarea cols="55" rows="4" property="pressMessage" />
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<fmt:message key="group.evalmessage"/>
+				</th>
+				<td>
+					<html:textarea cols="55" rows="4" property="evalMessage" />
+				</td>
+			</tr>
+            <c:if test="${user.level ge globals.USER_INTERNAL}">
+                <tr>
+                    <th><fmt:message key="client.client"/></th>
+                    <td>
+           				<html:select property="clientID">
+       	    				<c:set var="clients" value="${globals.clients}"/>
+       		    			<html:options collection="clients" labelProperty="clientName" property="clientID"/>
+                        </html:select>
+                    </td>
+                </tr>
+            </c:if>
+    		<tr>
+				<th></th>
+				<td>
+					<html:submit><fmt:message key="prompt.update"/></html:submit>
+				</td>
+			</tr>
+		</table>
+	</html:form>
+	<h2><fmt:message key="group.users"/></h2>
+	<div class="display">
+		<display:table list="${groupForm.users}" id="login" pagesize="25" requestURI="admin-group" sort="list" class="com.mws.phoenix.db.web.Login">
+			<display:column property="loginName" titleKey="login.loginname"    sortable="true" headerClass="sortable"/>
+			<display:column property="userName"  titleKey="login.username"     sortable="true" headerClass="sortable"/>
+			<display:column property="email"     titleKey="login.email" sortable="true" headerClass="sortable"/>
+			<display:column property="fax"       titleKey="login.fax"    sortable="true" headerClass="sortable"/>
+        	<display:column                            titleKey="login.logins">
+                ${login.curLogins} (${login.maxLogins})
+    	    </display:column>
+			<display:column                      titleKey="login.level"  sortable="true" headerClass="sortable">
+				<fmt:message key="${globals.levels[login.level]}"/>
+			</display:column>
+			<display:column                      titleKey="prompt.edit">
+                <c:if test="${login.level lt user.level}">
+				    <html:link action="admin-user?loginID=${login.loginID}"><html:img altKey="prompt.edit" titleKey="prompt.edit" src="image?resource=edit16.gif"/></html:link>
+				</c:if>
+			</display:column>
+		</display:table>
+	</div>
+</div>
+	

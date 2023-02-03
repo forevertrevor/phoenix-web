@@ -1,0 +1,44 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<html:xhtml/>
+<div class="newsform">
+    <script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+    <html:javascript formName="/admin-list" method="validateList" cdata="false" staticJavascript="false" />
+    <c:if test="${user.level ge globals.USER_INTERNAL}">
+		<html:messages name="mediagen.admin.messages" id="msg" header="news.messages.header" footer="messages.footer">
+			<b class="message">${msg}</b>
+		</html:messages>
+		<html:messages name="mediagen.admin.errors" id="msg" header="news.errors.header" footer="errors.footer">
+			<b class="error">${msg}</b>
+		</html:messages>
+		<script type="text/javascript">var adminFormValidate = "mediagen.admin."</script>
+		<div class="validate" id="mediagen.admin.validate">
+		</div>
+        <html:form action="/admin-list" method="get" onsubmit="return validateList(this);">
+            <table class="form">
+                <tr>
+                    <th><fmt:message key="prompt.show"/></th>
+                    <td>
+                        <html:select property="action">
+                            <html:option value="groups"><fmt:message key="admin.groups"/></html:option>
+                            <html:option value="styles"><fmt:message key="admin.styles"/></html:option>
+                            <html:option value="users"><fmt:message key="admin.users"/></html:option>
+                            <html:option value="alerts"><fmt:message key="admin.alerts"/></html:option>
+                            <html:option value="archives"><fmt:message key="admin.archives"/></html:option>
+                            <html:option value="finances"><fmt:message key="admin.finances"/></html:option>
+                        </html:select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><fmt:message key="prompt.filter"/></th>
+                    <td><html:text property="search" size="20" /></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><html:submit><fmt:message key="prompt.view"/></html:submit></td>
+                </tr>
+            </table>
+        </html:form>
+    </c:if>
+</div>

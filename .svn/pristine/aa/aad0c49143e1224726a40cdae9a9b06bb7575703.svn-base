@@ -1,0 +1,276 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0"> 
+
+  <!-- icon -->
+  <display-name>Phoenix</display-name>
+  <description>
+    Phoenix Web Application
+  </description>
+  <!-- distributable -->
+
+<!--context-params -->
+	<context-param>
+		<param-name>jndi.jdbc</param-name>
+		<param-value>java:comp/env/jdbc/phoenix</param-value>
+	</context-param>
+
+    <context-param>
+        <param-name>jndi.mail</param-name>
+        <param-value>java:comp/env/mail/session</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>javax.servlet.jsp.jstl.fmt.localizationContext</param-name>
+        <param-value>com.mws.phoenix.web.resource.Phoenix</param-value>
+    </context-param>
+    <context-param>
+        <param-name>log4j-config-location</param-name>
+        <param-value>WEB-INF/log4j.properties</param-value>
+    </context-param>
+
+<!--filters -->
+
+  <!-- Zips the response's output if the client can accept gzip encoding -->
+  <filter>
+	<filter-name>zipResponse</filter-name>
+	<filter-class>com.mws.phoenix.web.filter.GzipFilter</filter-class>
+  </filter>
+  
+  <!-- Redirects the client to the loginPage page if they are not correctly logged in and 
+       are not requesting a resource that matches any endsWith or indexOf -->
+  <filter>
+    <filter-name>userValidate</filter-name>
+    <filter-class>com.mws.phoenix.web.filter.LoginFilter</filter-class>
+	<init-param>
+	    <param-name>loginPage</param-name>
+	    <param-value>/phoenix/action/index</param-value>
+	</init-param>
+	<init-param>
+	    <param-name>homePage</param-name>
+	    <param-value>/phoenix/action/home</param-value>
+	</init-param>
+	<init-param>
+	    <param-name>allowURI</param-name>
+	    <param-value>^/phoenix/welcome/;^/phoenix/action/welcome;^/phoenix/action/login$;^/phoenix/action/auto-login;^/phoenix/action/index$;^/phoenix/action/contact$;^/phoenix/action/remind;^/trans</param-value>
+	</init-param>
+	<init-param>
+	    <param-name>bookmarkURI</param-name>
+	    <param-value>^/phoenix/action/admin.*$;^/phoenix/action/evaluation$;^/phoenix/action/home$|^/phoenix/action/home\?.*$;^/phoenix/action/news$|^/phoenix/action/news\?.*$;^/phoenix/action/archive$|^/phoenix/action/archive\?.*$;^/phoenix/action/folders$|^/phoenix/action/folders\?.*$</param-value>
+	</init-param>
+  </filter>
+  
+  <!-- Prevents the Response being flushed. Used for DisplayTag Export -->
+  <filter>
+    <filter-name>ResponseOverrideFilter</filter-name>
+    <filter-class>org.displaytag.filter.ResponseOverrideFilter</filter-class>
+  </filter>  
+
+<!--filter-mappings -->
+  <filter-mapping>
+    <filter-name>zipResponse</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>userValidate</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>ResponseOverrideFilter</filter-name>
+    <url-pattern>/action/execute-report</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ResponseOverrideFilter</filter-name>
+    <url-pattern>/action/admin-list</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ResponseOverrideFilter</filter-name>
+    <url-pattern>/action/report-list</url-pattern>
+  </filter-mapping>
+  
+<!--listeners -->
+  <listener>
+    <listener-class>com.mws.phoenix.web.listener.DatabaseListener</listener-class>
+  </listener>
+
+   <listener>
+    <listener-class>com.mws.phoenix.web.listener.MailListener</listener-class>
+  </listener>
+<!-- 
+  <listener>
+    <listener-class>com.mws.phoenix.web.listener.ArchiveListener</listener-class>
+  </listener>
+ -->
+  <listener>
+    <listener-class>com.mws.phoenix.web.listener.StartupListener</listener-class>
+  </listener>
+
+<!--servlets -->
+
+  <!-- Action Servlet handles all struts actions -->
+  <servlet>
+    <servlet-name>action</servlet-name>
+    <servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+    <init-param>
+      <param-name>application</param-name>
+      <param-value>com.mws.phoenix.web.resource.Phoenix</param-value>
+    </init-param>
+    <init-param>
+      <param-name>config</param-name>
+      <param-value>/WEB-INF/struts-config.xml</param-value>
+    </init-param>
+    <init-param>
+      <param-name>debug</param-name>
+      <param-value>2</param-value>
+    </init-param>
+    <init-param>
+      <param-name>detail</param-name>
+      <param-value>2</param-value>
+    </init-param>
+    <load-on-startup>2</load-on-startup>
+  </servlet>
+
+  <!-- 
+  <servlet>
+	<servlet-name>chart</servlet-name>
+	<servlet-class>com.mws.phoenix.eval.ChartServlet</servlet-class>
+  </servlet>
+  -->
+  <servlet>
+  	<servlet-name>transform</servlet-name>
+  	<servlet-class>com.mws.phoenix.web.TransformServlet</servlet-class>
+  </servlet>
+  
+  <servlet>
+  	<servlet-name>ticker</servlet-name>
+  	<servlet-class>com.mws.phoenix.web.shares.StockTicker</servlet-class>
+  </servlet>
+
+  <servlet>
+  	<servlet-name>byteserve</servlet-name>
+  	<servlet-class>com.mws.phoenix.web.RangeServlet</servlet-class>
+  </servlet>
+
+<!--servlet-mappings -->
+
+  <servlet-mapping>
+    <servlet-name>action</servlet-name>
+    <url-pattern>/action/*</url-pattern>
+  </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>jsp</servlet-name>
+        <url-pattern>*.jsp</url-pattern>
+        <url-pattern>*.jspf</url-pattern>
+        <url-pattern>*.js</url-pattern>
+        <url-pattern>*.css</url-pattern>
+    </servlet-mapping>
+  
+  <!-- Direct all requests for charts to the ChartServlet -->
+  <!-- 
+  <servlet-mapping>
+	<servlet-name>chart</servlet-name>
+	<url-pattern>/chart/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+	<servlet-name>chart</servlet-name>
+	<url-pattern>*.chart</url-pattern>
+  </servlet-mapping>
+  -->
+
+  <!-- Direct all requests for transformations to the TransformServlet -->
+  <servlet-mapping>
+	<servlet-name>transform</servlet-name>
+	<url-pattern>/trans/*</url-pattern>
+	<url-pattern>*.trans</url-pattern>
+  </servlet-mapping>
+
+  <!-- Direct all requests for share information to the StockTicker -->
+  <servlet-mapping>
+	<servlet-name>ticker</servlet-name>
+	<url-pattern>/tick/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+	<servlet-name>ticker</servlet-name>
+	<url-pattern>*.tick</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+  	<servlet-name>byteserve</servlet-name>
+  	<url-pattern>/range/*</url-pattern>
+  </servlet-mapping>
+
+<!-- session-config -->
+  <session-config>
+	<session-timeout>15</session-timeout>
+  </session-config>
+
+<!-- mime-mappings -->
+
+<!-- welcome-file-list -->
+  <welcome-file-list>
+    <welcome-file>/action/index</welcome-file>
+	<welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+<!-- error-pages -->
+
+<!-- taglibs -->
+
+<!-- resource-env-refs -->
+
+<!-- resource-ref -->
+  <resource-ref>
+    <description>WebSite Database</description>
+    <res-ref-name>jdbc/phoenix</res-ref-name>
+    <res-type>javax.sql.DataSource</res-type>
+    <res-auth>Container</res-auth>
+  </resource-ref>
+
+  <resource-ref>
+    <description>SMTP Mail Server</description>
+    <res-ref-name>mail/session</res-ref-name>
+    <res-type>javax.mail.Session</res-type>
+    <res-auth>Container</res-auth>
+  </resource-ref>
+  <jsp-config>
+        <taglib>
+            <taglib-uri>incl</taglib-uri>
+            <taglib-location>/WEB-INF/tags/including.tld</taglib-location>
+        </taglib> 
+        <taglib>
+            <taglib-uri>login</taglib-uri>
+            <taglib-location>/WEB-INF/tags/login.tld</taglib-location>
+        </taglib>  
+        <taglib>
+            <taglib-uri>logic</taglib-uri>
+            <taglib-location>/WEB-INF/tags/logic.tld</taglib-location>
+        </taglib> 
+         <taglib>
+            <taglib-uri>fn</taglib-uri>
+            <taglib-location>/WEB-INF/tags/formatting.tld</taglib-location>
+        </taglib>    
+        <taglib>
+            <taglib-uri>qry</taglib-uri>
+            <taglib-location>/WEB-INF/tags/query.tld</taglib-location>
+        </taglib>      
+    </jsp-config>   
+
+
+<!-- security-constraints -->
+
+<!-- login-config -->
+
+<!-- security-roles -->
+
+<!-- env-entrys -->
+
+<!-- ejb-refs -->
+
+<!-- ejb-local-refs -->
+
+</web-app>

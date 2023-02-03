@@ -1,0 +1,53 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="/WEB-INF/tags/logic.tld" prefix="lg"%>
+<html:xhtml/>
+<!-- Menu bar start -->
+<div class="menubar right">
+	<span <c:if test="${lg:strStartsWith(bookmark, '/action/admin') and user.level lt globals.USER_INTERNAL}">class="selected"</c:if>>
+		<html:link page="/action/admin-user?loginID=0"><html:img src="image?resource=user16.gif" alt="" title="User" styleClass="icon" /> ${user.userName}</html:link>
+	</span>
+		<span <c:if test="${lg:strStartsWith(bookmark, '/action/home')}">class="selected"</c:if>>
+		<html:link page="/action/home"><html:img src="image?resource=home16.gif" alt="" title="Home" styleClass="icon" /> <fmt:message key="menubar.home" /></html:link>
+	</span>
+    <c:if test="${lg:isSet(user.controls, globals.CONTROL_NEWS)}">
+		<span <c:if test="${lg:strStartsWith(bookmark, '/action/news')}">class="selected"</c:if>>
+			<html:link page="/action/news"><html:img src="image?resource=news16.gif" alt="" title="News" styleClass="icon" /> <fmt:message key="menubar.news"/></html:link>
+		</span>
+    </c:if>
+    <c:if test="${lg:isSet(user.controls, globals.CONTROL_FOLDERS)}">
+		<span <c:if test="${lg:strStartsWith(bookmark, '/action/folder')}">class="selected"</c:if>>
+			<html:link page="/action/folders"><html:img src="image?resource=folders16.gif" alt="" title="Evaluation" styleClass="icon" /> <fmt:message key="menubar.folders" /></html:link>
+		</span>
+    </c:if>
+    <c:if test="${user.archive.enabled}">
+		<span <c:if test="${lg:strStartsWith(bookmark, '/action/archive')}">class="selected"</c:if>>
+			<html:link page="/action/archive"><html:img src="image?resource=archive16.gif" alt="" title="Archive" styleClass="icon" /> <fmt:message key="menubar.archive"/></html:link>
+		</span>
+	</c:if>
+    <c:if test="${user.finance.enabled}">
+		<span <c:if test="${lg:strStartsWith(bookmark, '/action/finance')}">class="selected"</c:if>>
+			<html:link page="/action/finance"><html:img src="image?resource=finance16.gif" alt="" title="Finance" styleClass="icon" /> <fmt:message key="menubar.finance"/></html:link>
+		</span>
+	</c:if>
+	<%-- 
+    <c:if test="${lg:isSet(user.controls, globals.CONTROL_EVALUATION)}">
+		<span <c:if test="${lg:strStartsWith(bookmark, '/action/evaluation')}">class="selected"</c:if>>
+			<html:link page="/action/evaluation"><html:img src="image?resource=evaluation16.gif" alt="" title="Evaluation" styleClass="icon" /> <fmt:message key="menubar.evaluation" /></html:link>
+		</span>
+	</c:if>
+    --%>	
+	<c:if test="${user.level ge globals.USER_INTERNAL}">
+		<span <c:if test="${lg:strStartsWith(bookmark, '/action/admin')}">class="selected"</c:if>>
+		    <html:link page="/action/admin?page=default.home"><html:img src="image?resource=administration16.gif" alt="" title="Administration" styleClass="icon" /> <fmt:message key="menubar.admin" /></html:link>
+    	</span>
+	</c:if>
+	<span>
+    	<html:link page="/action/logoff"><html:img src="image?resource=logoff16.gif" alt="" title="Log Off" styleClass="icon" /> <fmt:message key="menubar.logoff" /></html:link>
+	</span>
+	<span>
+		<html:link page="/action/welcome?page=help" target="_blank"><html:img src="image?resource=help16.gif" alt="" title="Help" styleClass="icon" /> <fmt:message key="menubar.help" /></html:link>
+	</span>
+</div>
+<!-- Menu bar end -->

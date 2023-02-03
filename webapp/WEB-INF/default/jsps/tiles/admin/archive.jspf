@@ -1,0 +1,52 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="/WEB-INF/tags/query.tld" prefix="qry"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="mg" %>
+<html:xhtml/>
+<div class="info">
+    <script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+	<script type="text/javascript" src='<html:rewrite href="script?resource=calendar.js"/>'></script>
+    <html:javascript formName="archForm" method="validateArchive" cdata="false" staticJavascript="false" />
+    <mg:adminbar selected="archive" loginid="${archForm.archiveID}"/>
+	<h2><fmt:message key="title.archive"/> - ${archForm.user.userName}</h2>
+	<html:messages name="mediagen.archive.messages" id="msg" header="archive.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+    <html:messages name="mediagen.archive.errors" id="msg" header="archive.errors.header" footer="errors.footer">
+  		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var archiveFormValidate = "mediagen.archive."</script>
+    <div class="validate" id="mediagen.archive.validate">
+	</div>
+	<html:form action="/admin-archive" method="post"  onsubmit="return validateArchive(this);">
+		<input type="hidden" name="action" value="update" />
+    	<html:hidden property="archiveID" />
+		<table>
+			<tr>
+                <th></th>
+                <td><html:checkbox property="enabled" /> <fmt:message key="archive.enable" /></td>
+			</tr>
+            <tr>
+                <th></th>
+                <td><html:checkbox property="includeOthers"/> <fmt:message key="archive.includeothers"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="archive.created"/></th>
+                <td><html:text size="20" property="created"/></td>
+            </tr>
+            <tr>
+                <th><fmt:message key="archive.lastsent"/></th>
+                <td><html:text size="20" property="lastSent"/></td>
+            </tr>
+            <tr>
+		        <th></th>
+				<td>
+					<html:submit><fmt:message key="prompt.update"/></html:submit>
+				</td>
+			</tr>
+		</table>
+	</html:form>
+</div>

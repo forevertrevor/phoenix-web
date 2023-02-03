@@ -1,0 +1,28 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<html:xhtml/>
+<div class="info display">
+        <h2>${folder.folderName}</h2>
+        <p>${folder.folderDesc}</p>
+        <c:forEach items="${folder.items}" var="item">
+            <h4>${item.hit.article.headline}</h4>
+            <p>
+                <c:choose>
+                    <c:when test="${empty(item.hit.summary)}">
+                        ${item.hit.article.summary}
+                    </c:when>
+                    <c:otherwise>
+                        ${item.hit.summary}
+                    </c:otherwise>
+                </c:choose>
+            </p>
+            <p>
+                <i>${item.hit.article.attribution}</i>
+                <c:forEach var="also" items="${item.hit.alsoMentioned}">
+                    , ${also.article.attribution}
+                </c:forEach>
+            </p>
+        </c:forEach>
+</div>

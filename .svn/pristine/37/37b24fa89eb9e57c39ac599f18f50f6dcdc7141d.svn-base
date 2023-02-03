@@ -1,0 +1,46 @@
+app.name=phoenix
+app.version=1.0.2
+app.title=MWS Phoenix Web App
+app.main.class=
+app.java.args=
+
+# Logging 
+log4j.jar=${dir.lib}/log4j-1.2.16.jar
+commons-logging.jar=${dir.lib}/commons-logging-1.0.3.jar
+logging.path=${log4j.jar};${commons-logging.jar}
+
+# MWS
+mws-core.jar=${dir.lib}/mws-core-1.0.0.jar
+phoenix-data.jar=${dir.lib}/phoenix-data-1.0.4.jar
+datastore.jar=${dir.lib}/data-store-1.0.3.jar
+mws.path=${mws-core.jar};${phoenix-data.jar};${datastore.jar};${phoenix-shared.jar}
+
+# Struts
+servlet.jar=${dir.lib}/servlet-api.jar
+jsp.jar=${dir.lib}/jsp-api.jar
+struts.jar=${dir.lib}/struts.jar
+jstl.jar=${dir.lib}/jstl.jar
+standard.jar=${dir.lib}/standard.jar
+struts.path=${servlet.jar};${jsp.jar};${struts.jar};${jstl.jar};${standard.jar}
+
+# Mail
+activation.jar=${dir.lib}/activation.jar
+mail.jar=${dir.lib}/mail-1.5.0-b01.jar
+mail.path=${activation.jar};${mail.jar}
+
+# DisplayTag
+displaytag.jar=${dir.lib}/displaytag-1.1.1.jar
+
+# jFreeChart
+jcommon.jar=${dir.lib}/jcommon-0.9.6.jar
+jfreechart.jar=${dir.lib}/jfreechart-0.9.21.jar
+jfreechart.path=${jcommon.jar};${jfreechart.jar}
+
+# Lib
+fop.jar=${dir.lib}/fop.jar
+itext.jar=${dir.lib}/itext-1.4.1.jar
+commons-lang.jar=${dir.lib}/commons-lang-2.3.jar
+lib.path=${fop.jar};${itext.jar};${commons-lang.jar}
+
+class.path=${logging.path};${mws.path};${struts.path};${mail.path};${displaytag.jar};${jfreechart.path};${lib.path}
+

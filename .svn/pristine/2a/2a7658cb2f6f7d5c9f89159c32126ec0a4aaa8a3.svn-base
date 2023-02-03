@@ -1,0 +1,598 @@
+package com.mws.phoenix.web;
+
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+
+import com.mws.db.DataStore;
+import com.mws.db.DataStoreException;
+import com.mws.phoenix.db.article.Article;
+import com.mws.phoenix.db.article.cutting.Cutting;
+import com.mws.phoenix.db.brief.Client;
+import com.mws.phoenix.db.despatch.Hit;
+import com.mws.phoenix.db.source.SourceCategory;
+import com.mws.phoenix.db.source.SourceType;
+import com.mws.phoenix.db.web.Login;
+import com.mws.phoenix.db.web.LoginGroup;
+import com.mws.phoenix.db.web.LoginStyle;
+import com.mws.util.date.DateUtilities;
+
+public class WebUtilities {
+
+    static Log log = LogFactory.getLog(WebUtilities.class);
+    
+    private static WebUtilities instance = null;
+
+    public static final String defaultBrandingID = "XY7";
+    public static final int PCAID = 18396;
+    public static final NumberFormat circ = new DecimalFormat("#,###");
+    public static final String eClipsAPI = "http://www.nla-eclips.com/NLAAPI.dll/";
+    private List<String> level = null;
+    private List<String> title = null;
+    private List<LabelValueBean> tool = null;
+    private List<LabelValueBean> service = null;
+    private List<SourceType> sourceType = null;
+    private List<SourceCategory> sourceCategories = null;
+    
+    // Menu controls
+    public static final int CONTROL_NEWS = 0;
+    //public static final int CONTROL_EVALUATION = 1;
+    
+    // Toolbar controls
+    public static final int CONTROL_VIEW = 2;
+    public static final int CONTROL_PRINTSUMMARY = 3;
+    public static final int CONTROL_PRINTARTICLE = 4;
+    public static final int CONTROL_EMAILSUMMARY = 5;
+    public static final int CONTROL_EMAILARTICLE = 6;
+    public static final int CONTROL_FAXBACK = 7;
+    public static final int CONTROL_FOLDERS = 8;
+    
+    private WebUtilities() {
+        //TODO: These should really be taken from a database or a properties file
+        buildLevels();
+        buildTitles();
+        buildTools();
+        buildServices();
+        
+        buildSourceTypes();
+        buildSourceCategories();
+    }
+
+    public static WebUtilities getInstance() {
+        if (null == instance) {
+            instance = new WebUtilities();
+        }
+        return instance;
+    }
+
+    public List<String> getLevels() {
+        return level;
+    }
+    
+    public List<String> getTitles() {
+        return title;
+    }
+    
+    public List<LabelValueBean> getTools() {
+        return tool;
+    }
+
+    public List<LabelValueBean> getServices() {
+        return service;
+    }
+    
+    public List<SourceType> getSourceTypes() {
+    	return sourceType;
+    }
+    
+    public List<SourceCategory> getSourceCategories() {
+    	return sourceCategories;
+    }
+
+    private void buildLevels() {
+        level = new ArrayList<String>(6);
+        level.add("level.readonly");
+        level.add("level.viewclip");
+        level.add("level.editclip");
+        level.add("level.changeclip");
+        level.add("level.administrator");
+        level.add("level.internal");
+    }
+
+    private void buildTitles() {
+        title = new ArrayList<String>(5);
+        title.add("Mr");
+        title.add("Mrs");
+        title.add("Ms");
+        title.add("Miss");
+        title.add("Dr");
+    }
+
+    private void buildTools() {
+        tool = new ArrayList<LabelValueBean>(6);
+        tool.add(new LabelValueBean("view", new Integer(CONTROL_VIEW).toString()));
+        tool.add(new LabelValueBean("printsummary", new Integer(CONTROL_PRINTSUMMARY).toString()));
+        tool.add(new LabelValueBean("printarticle", new Integer(CONTROL_PRINTARTICLE).toString()));
+        tool.add(new LabelValueBean("emailsummary", new Integer(CONTROL_EMAILSUMMARY).toString()));
+        tool.add(new LabelValueBean("emailarticle", new Integer(CONTROL_EMAILARTICLE).toString()));
+        tool.add(new LabelValueBean("faxback", new Integer(CONTROL_FAXBACK).toString()));
+    }
+
+    private void buildServices() {
+        service = new ArrayList<LabelValueBean>(2);
+        service.add(new LabelValueBean("press", new Integer(CONTROL_NEWS).toString()));
+        service.add(new LabelValueBean("folders", new Integer(CONTROL_FOLDERS).toString()));
+        //service.add(new LabelValueBean("evaluation", new Integer(CONTROL_EVALUATION).toString()));
+    }
+
+    private void buildSourceTypes() {
+    	try {
+			sourceType = DataStore.store().getAllObjects(SourceType.class, "sourceTypeName");
+		} catch (DataStoreException e) {
+			log.error("Cannot load list of Source Types", e);
+		}
+    }
+    
+    private void buildSourceCategories() {
+    	try {
+			sourceCategories = DataStore.store().getAllObjects(SourceCategory.class, "categoryName");
+		} catch (DataStoreException e) {
+			log.error("Cannot load list of Source Categories", e);
+		}
+    }
+
+    public static String HTMLEncode(String text) {
+        text = text.replaceAll("&", "&amp;");
+        text = text.replaceAll("<", "&lt;");
+        text = text.replaceAll(">", "&gt;");
+        return text;
+    }
+    
+    public static String getUserFolder(HttpServletRequest request) {
+        Login user = (Login)request.getSession().getAttribute("user");
+        if (null == user || null == user.getStyle() || null == user.getStyle().getFolder() || "".equals(user.getStyle().getFolder())) {
+            return "/default";
+        } else {
+            return user.getStyle().getFolder();
+        }
+    }
+    
+    public static String getSubFolder(ActionMapping mapping) {
+        String type = mapping.getPath();
+		if (type.equals("/image")) {
+			return "images/";
+		} else if (type.equals("/style")) {
+			return "styles/";
+		} else if (type.equals("/script")) {
+			return "scripts/";
+		} else if (type.equals("/page")) {
+            return "jsps/tiles/";
+		} else if (type.equals("/template")) {
+			return "templates/";
+		} else {
+		    return "";
+		}
+    }
+    
+    public static String getResource(ServletContext application, String userfolder, String defaultfolder, String resource) throws MalformedURLException {
+        String path = "/WEB-INF/" + userfolder + resource;
+        URL url = application.getResource(path);
+        if (null == url) {
+            path = "/WEB-INF" + defaultfolder + resource;
+           	url = application.getResource(path);
+        }
+        if (null == url) {
+           	if (log.isWarnEnabled()) {
+                log.warn("Cannot find " + userfolder + resource + " or " + defaultfolder + resource);
+            }
+           	path = null;
+        }
+        return path;
+    }
+    
+    public static void debugAttributes(HttpServletRequest request) {
+        if (log.isDebugEnabled()) {
+            Enumeration<String> enumeration = request.getAttributeNames();
+            while(enumeration.hasMoreElements()) {
+                String key = enumeration.nextElement();
+                log.debug(key + ": " + request.getAttribute(key));
+            }
+        }
+    }
+    
+    public static void debugParameters(HttpServletRequest request) {
+        if (log.isDebugEnabled()) {
+            Enumeration<String> enumeration = request.getParameterNames();
+            while(enumeration.hasMoreElements()) {
+                String key = enumeration.nextElement();
+                String[] param = request.getParameterValues(key);
+                for (int i = 0; i < param.length; i++) {
+                    log.debug(key + ": " + param[i]);
+                }
+            }
+        }
+    }
+    
+    public List<Client> getClients() {
+        try {
+            return DataStore.store().getAllObjects(Client.class, "clientName");
+        } catch (DataStoreException e) {
+            e.printStackTrace();
+            return new ArrayList<Client>();
+        }
+    }
+    
+    public List<LoginGroup> getGroups() {
+        try {
+            return DataStore.store().getAllObjects(LoginGroup.class, "groupName");
+        } catch (DataStoreException e) {
+            e.printStackTrace();
+            return new ArrayList<LoginGroup>();
+        }
+    }
+
+    public List<LoginStyle> getStyles() {
+        try {
+            return DataStore.store().getAllObjects(LoginStyle.class, "styleName");
+        } catch (DataStoreException e) {
+            e.printStackTrace();
+            return new ArrayList<LoginStyle>();
+        }
+    }
+    
+    public Long getUSER_SUMMARY() {
+        return Login.SUMMARY;
+    }
+    public Long getUSER_CLIP() {
+        return Login.CLIP;
+    }
+    public Long getUSER_EDITOR() {
+        return Login.EDITOR;
+    }
+    public Long getUSER_OPERATOR() {
+        return Login.OPERATOR;
+    }
+    public Long getUSER_ADMIN() {
+        return Login.ADMIN;
+    }
+    public Long getUSER_INTERNAL() {
+        return Login.INTERNAL;
+    }
+
+    public int getCONTROL_VIEW() {
+        return CONTROL_VIEW;
+    }
+
+    public int getCONTROL_EMAILARTICLE() {
+        return CONTROL_EMAILARTICLE;
+    }
+
+    public int getCONTROL_EMAILSUMMARY() {
+        return CONTROL_EMAILSUMMARY;
+    }
+
+    //public int getCONTROL_EVALUATION() {
+    //    return CONTROL_EVALUATION;
+    //}
+
+    public int getCONTROL_FAXBACK() {
+        return CONTROL_FAXBACK;
+    }
+
+    public int getCONTROL_NEWS() {
+        return CONTROL_NEWS;
+    }
+
+    public int getCONTROL_PRINTARTICLE() {
+        return CONTROL_PRINTARTICLE;
+    }
+
+    public int getCONTROL_PRINTSUMMARY() {
+        return CONTROL_PRINTSUMMARY;
+    }
+    
+    public int getCONTROL_FOLDERS() {
+    	return CONTROL_FOLDERS;
+    }
+
+    public static boolean checkAccess(Login user, String parameters, ActionErrors errs, String message) {
+        if (parameters == null) {
+            return true;
+        }
+        String[] parameter = parameters.split(",");
+        int control = -1;
+        int level = -1;
+        for (int i = 0; i < parameter.length; i++) {
+            String[] part = parameter[i].split("=");
+            if (part.length > 1) {
+                if (part[0].equals("control")) {
+                    control = Integer.parseInt(part[1]);
+                } else if (part[0].equals("level")) {
+                    level = Integer.parseInt(part[1]);
+                } else if (part[0].equals("message")) {
+                    message = part[1];
+                }
+            }
+        }
+        if (control >= 0) {
+            if (user == null) {
+                return false;
+            } else {
+                return checkAccess(user.getControls(), control, errs, message);
+            }
+        } else if (level >= 0) {
+                if (user == null) {
+                    return false;
+                } else {
+                    return checkAccess(user.getLevel(), level, errs, message);
+                }
+        } else {
+            return true;
+        }
+    }
+    
+    public static boolean checkAccess(Long userLevel, int level, ActionErrors errs, String message) {
+        if (userLevel.intValue() >= level) {
+            return true;
+        } else {
+            if (message == null || message.equals("")) {
+                message = "requested";
+            }
+            errs.add("", new ActionMessage("error.tools.noaccess", message));
+            return false;
+        }
+    }
+    
+    public static boolean checkAccess(BitSet controls, int control, ActionErrors errs, String message) {
+        if (controls.get(control)) {
+            return true;
+        } else {
+            if (message == null || message.equals("")) {
+                message = "requested";
+            }
+            errs.add("", new ActionMessage("error.tools.noaccess", message));
+            return false;
+        }
+    }
+
+    /**
+     * Returns true if the date of upload is more than copyright days ago.
+     * Articles can only be viewed for x days after being uploaded.
+     * @param h the Hit to check
+     * @return true if article is too old to view
+     */
+    public static boolean outOfDate(Hit h) {
+    	Date now = DateUtilities.date(DateUtilities.add(new Date(),Calendar.DATE, 1 - h.getArticle().getSource().getCopyright().getExpiry().intValue()));
+    	if (now.compareTo(h.getHitDate()) > 0) {
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+    
+    /**
+     * Returns true if the article is no longer accessible by the user
+     * 
+     * @param item the Hit to check
+     * @param user the user making the request
+     * @return true if the article is no longer accessible
+     */
+    public static boolean isArticleExpired(Hit item, Login user) {
+        if (item.getArticle().getFilePath() == null) {
+            // Expired - File path is null
+            return true;
+        } else if (item.getArticle().getFilePath().equals("")) {
+            // Expired - File path is empty string
+            return true;
+        } else if (item.getArticle().getWithdrawn().booleanValue()) {
+        	// Expired - Article has been withdrawn
+        	return true;
+        } else if (WebUtilities.outOfDate(item)) {
+            // Expired (unless archived)
+            //if (item.getArticle().getNlaID() == null) {
+                // Expired - not NLA
+//                return true;
+            /*} else*/
+        	if (user.getArchive().getEnabled().equals(Boolean.FALSE)) {
+                // Expired - not Archived
+                return true;
+            } else if (item.getHitDate().before(DateUtilities.add(new Date(), Calendar.YEAR, -1))) {
+                // Expired - uploaded over a year ago
+                return true;
+            } else if (item.getHitDate().before(user.getArchive().getCreated())){
+                // Expired - uploaded before archive created
+                return true;
+            } else if (item.getArticle().getNlaID() == null 
+            		&& !user.getArchive().getIncludeOthers().booleanValue()) {
+            	// Expired - non-eClips articles not included
+            	return true;
+            } else if (item.getArticle().getSource().getCopyright().getCopyrightName().equals("NI")
+         		    && user.getRestrictNI().equals(Boolean.TRUE)) {
+            	// Expired = NLA New International article - user restricted.
+            	return true;
+            } else {
+                // Valid
+                return false;
+            }
+        } else if (item.getArticle().getSource().getCopyright().getRestricted().equals(Boolean.TRUE)
+                   && item.getArticle().getNlaID() == null) {
+            // Expired - electronically restricted non NLA
+            return true;
+        } else if (item.getArticle().getSource().getCopyright().getCopyrightName().equals("NI")
+        		   && user.getRestrictNI().equals(Boolean.TRUE)) {
+        	// Expired = NLA New International article - user restricted.
+        	return true;
+        } else {
+            // Valid
+            return false;
+        }
+    }
+    
+    
+    public static String getNlaApiUrl(Login user, Article article) throws UnsupportedEncodingException {
+    	List<Article> list = new ArrayList<Article>();
+    	list.add(article);
+    	return getNlaApiUrl(user, list);
+    }
+    
+    /**
+     * Build the URL to call the NLAAPI to retrieve the PDF file 
+     * with the correct branding
+     * 
+     * @param user the current user
+     * @param article the article to retrieve
+     * @return a url string
+     * @throws UnsupportedEncodingException
+     */
+    public static String getNlaApiUrl(Login user, List<Article> articles) throws UnsupportedEncodingException {
+    	StringBuffer ids = new StringBuffer();
+    	StringBuffer p1 = new StringBuffer();//Publication Name
+    	StringBuffer p2 = new StringBuffer();//Publication Section
+    	StringBuffer p3 = new StringBuffer();//Circulation
+    	StringBuffer p4 = new StringBuffer();//AVE
+    	String separator = "";
+    	for (int i = 0; i < articles.size(); i++) {
+    		// NLA Articles are always Cuttings
+    		Cutting article = (Cutting)articles.get(i);
+    		ids.append(separator);
+    		ids.append(article.getNlaID());
+    		p1.append(separator);
+    		p1.append(getPublicationText(article.getSource().getSourceName()));
+    		p2.append(separator);
+    		p2.append(getSectionText(article.getSection().getSectionName()));
+    		p3.append(separator);
+            p3.append(getCirculationText(article.getPublication().getCirculation()));
+            p4.append(separator);
+            p4.append(getAveText(article.getAve()));
+    		separator = "-";
+    	}
+    	
+    	StringBuffer url = new StringBuffer();
+        url.append(eClipsAPI);
+        url.append("GetObject?ObjectID=");
+        url.append(ids);
+        /*if (user.getNlaUserID() != null) {
+            url.append("&UserID=");
+            url.append(user.getNlaUserID());
+        }*/
+        url.append("&BrandingID=");
+        if (user.getStyle().getBrandingID() == null || user.getStyle().getBrandingID().equals("")) {
+            url.append(URLEncoder.encode(defaultBrandingID, "UTF-8"));
+        } else {
+            url.append(URLEncoder.encode(user.getStyle().getBrandingID(), "UTF-8"));
+        }
+        url.append("&PCAID=");
+        url.append(PCAID);
+        url.append("&P1=");
+        url.append(p1);
+        url.append("&P2=");
+        url.append(p2);
+        url.append("&P3=");
+        url.append(p3);
+        url.append("&P4=");
+        url.append(p4);
+        return url.toString();
+    }
+
+    /**
+     * Ensures that there is at least
+     */
+    private static String getSectionText(String section) throws UnsupportedEncodingException {
+    	if (section.length() == 0) {
+    		return URLEncoder.encode(" ", "UTF-8");
+    	} else {
+    		return URLEncoder.encode(section.replaceAll("-", "%96"), "UTF-8");
+    	}
+    }
+    /**
+     * Truncates the journalists' names to 32 characters if necessary.
+     * NB If journalists is empty return a single space (or NLAAPI 
+     * will complain).
+     * 
+     * @param journalists the journalists string
+     * @return a truncated version if longer than 32 characters
+     */
+    private static String getJournalistText(String journalists) throws UnsupportedEncodingException {
+        if (journalists.length() > 32) {
+            return URLEncoder.encode(journalists.substring(0, 32).replaceAll("-", "%96") + "...", "UTF-8");
+        } else if (journalists.length() == 0) {
+        	return URLEncoder.encode(" ", "UTF-8");
+        } else {
+            return URLEncoder.encode(journalists.replaceAll("-", "%96"), "UTF-8");
+        }
+    }
+    
+    private static String getPublicationText(String sourceName) throws UnsupportedEncodingException {
+    	if (sourceName.length() == 0) {
+    		return URLEncoder.encode(" ", "UTF-8");
+    	} else {
+    		return URLEncoder.encode(sourceName.replaceAll("-", "%96"), "UTF-8");
+    	}
+	}
+    
+    /**
+     * Formats the circulation figure nicely or returns n/a if the 
+     * value is zero
+     * @param circulation the Circulation figure of the publication
+     * @return a formatted String representing the circulation figure 
+     * @throws UnsupportedEncodingException 
+     */
+    private static String getCirculationText(Long circulation) throws UnsupportedEncodingException {
+        double dblCirc = circulation.doubleValue();
+        if (dblCirc == 0) {
+            return URLEncoder.encode("n/a", "UTF-8");
+        } else {
+            return URLEncoder.encode(circ.format(dblCirc).replaceAll("-", "%96"), "UTF-8");
+        }
+    }
+    
+    private static Object getAveText(Float ave) throws UnsupportedEncodingException {
+    	log.debug("Processing ave value "+ave);
+    	double dblAve = 0;
+    	try {
+    		dblAve = ave.doubleValue();
+    	}
+    	catch(Exception e){
+    		log.error("Didn't convert ave value from float to double",e);    		
+    	}
+    	
+        if (dblAve == 0) {
+            return URLEncoder.encode("n/a", "UTF-8");
+        } else {
+            return URLEncoder.encode(ave.toString().replaceAll("-", "%96"), "UTF-8");
+        }
+	}
+    
+    public static boolean displayNlaItem (Hit item, Login user){
+    	
+    	if(item.getArticle() instanceof Cutting){
+    		Cutting cutting = (Cutting)item.getArticle();
+    		if(cutting.getNlaID() != null && cutting.getNlaID()>0){
+    			return StringUtils.isNotEmpty(user.getStyle().getBrandingID());
+    		}
+    	}
+    	
+    	return true;
+    	
+    }
+    
+}

@@ -1,0 +1,861 @@
+package com.mws.phoenix.web.press;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.activation.URLDataSource;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.xml.transform.URIResolver;
+
+import org.apache.fop.apps.MimeConstants;
+import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+
+import com.lowagie.text.DocumentException;
+import com.mws.phoenix.db.article.Article;
+import com.mws.phoenix.db.article.rss.RSSItem;
+import com.mws.phoenix.db.article.cutting.Cutting;
+import com.mws.phoenix.db.article.webpage.Webpage;
+import com.mws.phoenix.db.despatch.AlsoOrder;
+import com.mws.phoenix.db.despatch.Hit;
+import com.mws.phoenix.db.despatch.HitSortSection;
+import com.mws.phoenix.db.despatch.StoryOrder;
+import com.mws.phoenix.db.web.Login;
+import com.mws.phoenix.util.XMLFactory;
+import com.mws.phoenix.web.WebUtilities;
+import com.mws.phoenix.web.MWSWebResolver;
+import com.mws.util.pdf.Annotation;
+import com.mws.util.pdf.FileAnnotations;
+import com.mws.util.pdf.PDFException;
+import com.mws.util.pdf.PDFUtilities;
+import com.mws.util.xml.XMLException;
+
+/**
+ * 
+ * @author Ed Webb
+ */
+public class ToolAction extends Action {
+
+    public static final String TOOL_INFO = "mediagen.tool.messages"; 
+    public static final String TOOL_ERRORS = "mediagen.tool.errors"; 
+    
+    public static final String FROM_ADDRESS = "mail@xy.media";
+    public static final String BCC_ADDRESS = "mail@xy.media";
+    public static final String FAXBACK_ADDRESS = "mail@xy.media";
+    
+    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        HttpSession session = request.getSession();
+        ServletContext app = session.getServletContext();
+        ToolForm tool = (ToolForm)form;
+        Login user = (Login)session.getAttribute("user");
+        String action = tool.getAction();
+
+        ActionErrors errs = new ActionErrors();
+
+        // Check that the user is allowed to use this tool
+        int control = Integer.parseInt(mapping.getParameter());
+        if (!user.getControls().get(control)) {
+            errs.add("", new ActionMessage("error.tools.noaccess", mapping.getPath().substring(1)));
+            request.setAttribute(org.apache.struts.Globals.ERROR_KEY, errs);
+            return mapping.findForward("noaccess");
+        }
+        
+        //This is a request to display a toolbar form
+        if (action.equals("")) {
+            tool.setFromName(user.getUserName());
+            tool.setFromAddress(user.getEmail());
+            if (mapping.getParameter().equals(new Integer(WebUtilities.CONTROL_FAXBACK).toString())) {
+            	tool.setToAddress(user.getFax());
+            }
+            tool.setCompany(user.getGroup().getGroupName());
+            tool.buildHits(request);
+            request.setAttribute("toolForm",tool);
+            return mapping.findForward("display");
+        } else if (action.equals("printarticle")) {
+            String fwd = printArticle(response, request, user, app, tool, errs);
+            if (fwd == null) {
+                // The pdf file has been created and sent to client
+                //directly using the response output stream so 
+                //return null
+                return null;
+            } else {
+                request.setAttribute(TOOL_ERRORS, errs);
+                return mapping.findForward(fwd);
+            }
+        } else {
+            // This is a completed form to be processed
+            
+            // Create the XML document containing the tool form and article data
+            tool.buildHits(request);
+            Document doc = createToolDocument(tool, user);
+            
+            if (doc != null) {
+                if (action.equals("emailsummary")) {
+                    sendEmailSummary(user, app, doc, tool);
+                } else if (action.equals("faxback")) {
+                    sendFaxback(user, app, doc, tool);
+                } else if (action.equals("emailarticle")) {
+                    errs = sendEmailArticle(user, app, doc, tool);
+                    request.setAttribute(TOOL_ERRORS, errs);
+                } else if (action.equals("printsummary")) {
+                    printSummary(request, user, app, doc);
+                }
+            } else {
+               errs.add("", new ActionMessage("error.document.create"));
+               request.setAttribute(TOOL_ERRORS, errs);
+               return mapping.getInputForward();
+            }
+            ActionMessages msgs = new ActionMessages();
+            msgs.add(TOOL_INFO, new ActionMessage("info." + tool.getAction() + ".success"));
+            request.setAttribute(TOOL_INFO, msgs);
+
+            return mapping.findForward("complete");
+        }
+    }
+    
+    /**
+     * Creates and sends an email message containing the summary data of the
+     * requested articles.
+     * 
+     * @param user the user making the request
+     * @param app the ServletContext
+     * @param doc the DOM Document containing the data
+     * @param tool
+     * @throws MessagingException
+     * @throws AddressException
+     * @throws MalformedURLException
+     * @throws XMLException
+     */
+    private void sendEmailSummary(Login user, ServletContext app, Document doc, ToolForm tool) throws MessagingException, AddressException, MalformedURLException, XMLException {
+        Session mail = (Session) app.getAttribute("mail");
+        MimeMessage msg = new MimeMessage(mail);
+        msg.setFrom(new InternetAddress(FROM_ADDRESS));
+        String toaddress = tool.getToAddress();
+        msg.setReplyTo(new InternetAddress[] {new InternetAddress(tool.getFromAddress())});
+        msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(BCC_ADDRESS));
+        String[] adds = toaddress.split(",");
+        for (int i = 0; i < adds.length; i++) {
+            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(adds[i].trim()));
+        }
+        msg.setSubject(tool.getSubject());
+        
+        String template = WebUtilities.getResource(app, user.getStyle().getFolder() + "templates/", "default/templates/", user.getStyle().getEmailSummary());
+        InputStream is = app.getResourceAsStream(template);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        URIResolver uriResolver = new MWSWebResolver(app, user.getStyle(), "templates/");
+        baos = (ByteArrayOutputStream)XMLFactory.transform(XMLFactory.source(doc), XMLFactory.source(is), XMLFactory.result(baos), uriResolver);
+        
+		msg.setContent(baos.toString(), "text/html; charset=utf-8");
+        Transport.send(msg);
+    }
+
+    /**
+     * Handles creating and sending a series of email messages that contain
+     * file attachments of article image files.
+     * 
+     * @param user the user making the request
+     * @param app the ServletContext
+     * @param doc the DOM Document containing the data
+     * @param tool the ToolForm
+     * @return ActionErrors object containing any ActionMessage objects
+     */
+    private ActionErrors sendEmailArticle(Login user, ServletContext app, Document doc, ToolForm tool) {
+        int messageCount = 0;
+        List<String[]> files = new ArrayList<String[]>();
+        ActionErrors errs = new ActionErrors();
+        Session mail = (Session)app.getAttribute("mail");
+        int curCount = 0;
+        long curSize = 0;
+        int maxCount = Integer.parseInt(tool.getMaxItems());
+        long maxSize = Long.parseLong(tool.getMaxSize()) * 1024 * 1024;
+        String defaultfolder = "default/clips/";
+        String userfolder = user.getStyle().getFolder() + "clips/";
+
+        Iterator<Hit> it = tool.getHits().iterator();
+        while (it.hasNext()) {
+            Hit hit = it.next();
+            
+            // Only include non-nla cuttings
+            if (!WebUtilities.isArticleExpired(hit, user) && hit.getArticle().getSource().getSourceType().getSourceTypeName().equals("Publication")) {
+            	String path = getFileName(hit.getArticle(), app, defaultfolder, userfolder);
+            	if (null != path) {
+            		long fileSize = getFileSize(path, app);
+                    System.out.println(path + " = " + fileSize);
+                    if (fileSize >= maxSize) {
+                        errs.add("", new ActionMessage("error.emailarticle.filesize", hit.getArticle().toString()));
+                    }
+            		if (curCount > maxCount || curSize + fileSize >= maxSize) {
+            			messageCount++;
+                    
+            			try {
+            				createMessage(mail, app, tool, files, messageCount, user, doc);
+            			} catch (Exception e) {
+            				errs.add("", new ActionMessage("error.emailarticle.sendmessage"));
+            			}
+            			curCount = 0;
+            			curSize = 0;
+            			files.clear();
+            		}
+            		files.add(new String[] {path, hit.getArticle().getHeadline()});
+            		curSize += fileSize;
+                    System.out.println("Current Size = " + curSize);
+            		curCount++;
+            	} else {
+            		errs.add("", new ActionMessage("error.emailarticle.missing", hit.getArticle().toString()));
+            	}
+            }
+        }
+        
+        //create and send the final message
+        try {
+            messageCount++;
+            createMessage(mail, app, tool, files, -messageCount, user, doc);
+        } catch (Exception e) {
+	        errs.add("", new ActionMessage("error.emailarticle.sendmessage", new Integer(messageCount)));
+        }
+
+        return errs;
+    }
+    
+    /**
+     * Creates and sends a mail message with file attachments for an email
+     * articles request.
+     * 
+     * @param mail the Mail Session
+     * @param app the ServletContext
+     * @param tool the ToolForm
+     * @param files the files to attach to the mail
+     * @param messageCount the index of this message in the request
+     * @param user the user making the request
+     * @param doc the DOM Document containing the data
+     * @throws MessagingException 
+     * @throws AddressException 
+     * @throws IOException 
+     * @throws DocumentException 
+     * @throws XMLException 
+     * @throws PDFException 
+     */
+    private void createMessage(Session mail, ServletContext app, ToolForm tool, List<String[]> files, int messageCount, Login user, Document doc) throws AddressException, MessagingException, DocumentException, IOException, XMLException, PDFException {
+        Message msg = new MimeMessage(mail);
+        msg.setFrom(new InternetAddress(FROM_ADDRESS));
+        msg.setReplyTo(new InternetAddress[] {new InternetAddress(tool.getFromAddress())});
+        msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(BCC_ADDRESS));
+
+        String toaddress = tool.getToAddress();
+        String[] adds = toaddress.split(",");
+        for (int i = 0; i < adds.length; i++) {
+            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(adds[i]));
+        }
+        
+        if (messageCount == 0) {
+            msg.setSubject(tool.getSubject());
+        } else {
+            msg.setSubject(tool.getSubject() + " (Part " + Math.abs(messageCount) + (messageCount < 0 ? " Last" : "") + ")");
+        }
+
+        Multipart mp = new MimeMultipart();
+        
+        StringBuffer sb = new StringBuffer();
+        sb.append(tool.getMessage());
+        sb.append("\n");
+
+        MimeBodyPart mbp = new MimeBodyPart();
+        mp.addBodyPart(mbp);
+        
+        if (tool.isCombinedPDF()) {
+            combineImages(app, mp, files, user.getLoginID());
+        } else {
+            attachImages(app, mp, files);
+        }
+        
+
+        // Create the text body
+        String template = WebUtilities.getResource(app, user.getStyle().getFolder() + "templates/", "default/templates/", user.getStyle().getEmailArticle());
+        InputStream is = app.getResourceAsStream(template);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        URIResolver uriResolver = new MWSWebResolver(app, user.getStyle(), "templates/");
+        baos = (ByteArrayOutputStream)XMLFactory.transform(XMLFactory.source(doc), XMLFactory.source(is), XMLFactory.result(baos), uriResolver);
+        
+        mbp.setContent(baos.toString(), "text/html; charset=utf-8");
+    
+        msg.setContent(mp);
+        Transport.send(msg);
+    }
+
+    /**
+     * Retrieves the absolute filepath of the file associated with the 
+     * Article.
+     *  
+     * @param a the article to find the assosiated file of 
+     * @param app the ServletContext
+     * @param defaultfolder the default folder
+     * @param userfolder the user's folder
+     * @return the absolute path to the file
+     */
+    private String getFileName(Article a, ServletContext app, String defaultfolder, String userfolder) {
+		if (!a.getSource().getCopyright().getRestricted().booleanValue() || a.getExpiryDate().compareTo(new Date()) >= 0) { 
+
+		    String path = null;
+            try {
+                path = WebUtilities.getResource(app, userfolder, defaultfolder, a.getFilePath());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            return path;
+		} else {
+		    return null;
+		}
+    }
+    
+    /**
+     * Calculates the size of a file from its path.
+     * 
+     * @param path the path to the file
+     * @param app the ServletContext
+     * @return the size of the file in bytes
+     */
+    private long getFileSize(String path, ServletContext app) {
+        try {
+            String real = app.getRealPath(path);
+            if (real != null) {
+                File file = new File(real);
+                return file.length();
+            } else {
+                return 300 * 1024;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 300 * 1024;
+        }
+    }
+    
+    /**
+     * Attaches the list of files as multiple attachments to the Multipart
+     * object.
+     * 
+     * @param app the ServletContext
+     * @param mp the Multipart to append the files to
+     * @param files the files to append
+     * @throws MalformedURLException
+     * @throws MessagingException
+     */
+    private void attachImages(ServletContext app, Multipart mp, List<String[]> files) throws MalformedURLException, MessagingException {
+        Iterator<String[]> it = files.iterator();
+        while (it.hasNext()) {
+            String[] file = it.next();
+		    DataSource ds = new URLDataSource(app.getResource(file[0]));
+    		MimeBodyPart mbpa = new MimeBodyPart();
+    		mbpa.setDataHandler(new DataHandler(ds));
+    		mbpa.setFileName(file[1].replace(' ', '_') + ".pdf");
+    		mp.addBodyPart(mbpa);
+        }
+    }
+
+    /**
+     * Combines the list of files into a single pdf file and adds the result
+     * as an attachment to the Multipart object.
+     * 
+     * @param app the ServletContext
+     * @param mp the Multipart to append the file to
+     * @param files the files to combine
+     * 
+     * @throws MessagingException
+     * @throws IOException
+     * @throws DocumentException
+     * @throws PDFException 
+     */
+    private void combineImages(ServletContext app, Multipart mp, List<String[]> files, Long userID) throws MessagingException, DocumentException, IOException, PDFException {
+        if (files == null || files.size() == 0) {
+            return;
+        }
+        
+        // Create a list of file names
+        List<FileAnnotations> filenames = new ArrayList<FileAnnotations>();
+        Iterator<String[]> it = files.iterator();
+        while (it.hasNext()) {
+            String[] part = it.next();
+            filenames.add(new FileAnnotations(app.getResource(part[0])));
+        }
+        
+        File tempFolder = (File)app.getAttribute("javax.servlet.context.tempdir");
+        
+        File pdfFile = new File(tempFolder, userID + "-e.pdf");
+        try {
+            PDFUtilities.combineFiles(filenames, tempFolder.getAbsolutePath() + "/", userID + "-e.pdf");
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        
+        DataSource ds = new FileDataSource(pdfFile);
+        
+        //PDFUtilities.combineFiles(filenames, tempFolder.getAbsolutePath(), userID + "-e.pdf");
+        MimeBodyPart mbpa = new MimeBodyPart();
+
+        mbpa.setDataHandler(new DataHandler(ds));
+		mbpa.setFileName("articles.pdf");
+		mp.addBodyPart(mbpa);
+    }
+    
+    
+    
+    /**
+     * Creates a Faxback mail message and sends it to the xymedia office
+     * 
+     * @param user the user making the request
+     * @param app the ServletContext
+     * @param doc the DOM Document containing the data
+     * @param tool the ToolForm
+     * 
+     * @throws MessagingException
+     * @throws AddressException
+     * @throws MalformedURLException
+     * @throws XMLException
+     */
+    private void sendFaxback(Login user, ServletContext app, Document doc, ToolForm tool) throws MessagingException, AddressException, MalformedURLException, XMLException {
+        Session mail = (Session)app.getAttribute("mail");
+        Message msg = new MimeMessage(mail);
+        msg.setFrom(new InternetAddress(FROM_ADDRESS));
+        String toaddress = FAXBACK_ADDRESS;
+        String[] adds = toaddress.split(",");
+        for (int i = 0; i < adds.length; i++) {
+            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(adds[i].trim()));
+        }
+        msg.setSubject("[FAXBACK] " + tool.getToName() + " - " + tool.getToAddress());
+
+
+        // Create the text body
+        String template = WebUtilities.getResource(app, user.getStyle().getFolder() + "templates/", "default/templates/", "faxback.xsl");
+        InputStream is = app.getResourceAsStream(template);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        URIResolver uriResolver = new MWSWebResolver(app, user.getStyle(), "templates/");
+        baos = (ByteArrayOutputStream)XMLFactory.transform(XMLFactory.source(doc), XMLFactory.source(is), XMLFactory.result(baos), uriResolver);
+        
+        msg.setContent(baos.toString(), "text/html; charset=utf-8");
+        Transport.send(msg);
+    }
+
+    /**
+     * Handles the creation, monitoring and delivery of a print articles request.
+     * The method queries the PDFMaker to find the status of the current user's
+     * print job. If none is pending then it will create and begin a new PDFMaker
+     * thread to compile the article images into a combined pdf file. If a job is
+     * currently running and not completed it returns and empty ActionErrors object
+     * to signal this. If the job is complete it reads the pdf file from disk and
+     * streams it to the response using the response's output stream.
+     * 
+     * @param response the current response
+     * @param user the user making the request
+     * @param app the ServletContext
+     * @param doc the DOM Document containing the data
+     * @param tool the ToolForm
+     * @return an ActionErrors object
+     * @throws MessagingException
+     * @throws AddressException
+     * @throws XMLException
+     * @throws DocumentException
+     * @throws PDFException
+     * @throws IOException
+     */
+    private String printArticle(HttpServletResponse response, HttpServletRequest request, Login user, ServletContext app, ToolForm tool, ActionErrors errs) throws MessagingException, AddressException, XMLException, DocumentException, PDFException, IOException {
+        File tempFolder = (File)app.getAttribute("javax.servlet.context.tempdir");
+        
+        int status = PDFMaker.getStatus(user.getLoginID()); 
+        
+        System.out.println("STATUS = " + status);
+        
+        if (status == PDFMaker.COMPLETED) {
+            sendPDF(response, tempFolder, user);
+            return null;
+        } else if (status >= PDFMaker.ACTIVE) {
+            System.out.println("PDF file is still being constructed");
+            try {
+            	request.setAttribute("printcount", new Integer(status));
+            } catch (Exception e) { }
+            return "retry";
+        } else if (status == PDFMaker.INVALID_ID) {
+            System.out.println("Sending request to PDFMaker");
+            request.setAttribute("printcount", new Integer(0));
+            tool.buildHits(request);
+            
+            // Return a list of valid articles for the combination
+            List<Article> articles = getValidArticles(tool.getHits(), user, errs);
+            
+            if (!user.getStyle().getSummary().booleanValue() 
+             && !user.getStyle().getPageNumber().booleanValue()
+             && isAlleClips(articles) && articles.size() <= 50) {
+            	String path = WebUtilities.getNlaApiUrl(user, articles);
+            	request.setAttribute("nlaredirect", path);
+            	return "nla-redirect";
+            } else {
+            	return createPDF(tool, user, app, errs, tempFolder);
+            }
+        }
+        //This line should never be reached
+        return "failure";
+    }
+    
+    /**
+     * Checks which articles are valid for a print articles request. This 
+     * will discard any article that is beyond the copyright and is not
+     * in a user's archive.
+     * @param hits the list of hits
+     * @param user the user requesting the print articles
+     * @param errs the actionerrors to add errors to
+     * @return
+     */
+    private List<Article> getValidArticles(List<Hit> hits, Login user, ActionErrors errs) {
+    	List<Article> articles = new ArrayList<Article>();
+    	Iterator<Hit> it = hits.iterator();
+    	while (it.hasNext()) {
+            Hit hit = it.next();
+            if (WebUtilities.isArticleExpired(hit, user)) {
+                errs.add("", new ActionMessage("error.printarticle.copyright", hit.getArticle().toString()));
+            } else {
+            	articles.add(hit.getArticle());
+            }
+    	}
+    	return articles;
+    }
+    
+    /**
+     * Write the contents of the temporary pdf file to the response output
+     * stream and set the correct headers to avoid caching.
+     * 
+     * @param response the response object
+     * @param tempFolder the catalina work folder
+     * @param user the user making the request
+     * @throws IOException
+     */
+    private void sendPDF(HttpServletResponse response, File tempFolder, Login user) throws IOException {
+    	System.out.println("Sending PDF file to client");
+        File pdfFile = new File(tempFolder, user.getLoginID() + "-p.pdf");
+        System.out.println(pdfFile.getAbsolutePath());
+        if (pdfFile.exists()) {
+            response.setContentLength(new Long(pdfFile.length()).intValue());
+            response.setContentType("application/pdf");
+            response.setHeader("Expires", "0");
+            response.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
+            response.setHeader("Pragma", "public");
+            if (user.getAttachment().booleanValue()) {
+            	response.setHeader("Content-Disposition", "attachment;filename=\"articles.pdf\"");
+            }
+
+            FileInputStream fin = new FileInputStream(pdfFile);
+            BufferedInputStream bis = new BufferedInputStream(fin);
+            ServletOutputStream out = response.getOutputStream(); 
+            
+            byte[] buf = new byte[1024];
+            long sent = 0;
+            int len;
+            while ((len = bis.read(buf)) >= 0) {
+                out.write(buf, 0, len);
+                sent += len;
+            }
+            System.out.println("Bytes sent: " + sent);
+            out.flush();
+            bis.close();
+        }
+        PDFMaker.stopMaker(user.getLoginID());
+    }
+
+    /**
+     * 
+     * @param tool
+     * @param user
+     * @param app
+     * @param errs
+     * @param tempFolder
+     * @throws MalformedURLException
+     * @throws UnsupportedEncodingException
+     * @throws XMLException
+     */
+    private String createPDF(ToolForm tool, Login user, ServletContext app, ActionErrors errs, File tempFolder) throws MalformedURLException, UnsupportedEncodingException, XMLException {
+        List<FileAnnotations> articles = new ArrayList<FileAnnotations>();
+        Iterator<Hit> it = tool.getHits().iterator();
+        int pageNumber = 1;
+        while (it.hasNext()) {
+            Hit hit = it.next();
+            if (WebUtilities.isArticleExpired(hit, user)) {
+                errs.add("", new ActionMessage("error.printarticle.copyright", hit.getArticle().toString()));
+            } else {
+            	FileAnnotations fa = null;
+            	Article art = hit.getArticle();
+            	int pageCount = 1;
+            	if (art.getNlaID() != null) {
+                    fa =  new FileAnnotations(new URL(WebUtilities.getNlaApiUrl(user, art)));
+                    pageCount = ((Cutting)art).getPageCount().intValue(); 
+                } else if (hit.getArticle() instanceof Webpage) {
+                    //TODO get Webpage into a pdf file!
+                } else if (hit.getArticle() instanceof RSSItem) {
+                    //TODO get RSSItem into a pdf file!
+                } else if (!hit.getArticle().getSource().getCopyright().getRestricted().booleanValue()) {
+                    String path = WebUtilities.getResource(app, user.getStyle().getFolder() + "clips/", "default/clips/", hit.getArticle().getFilePath());
+                    pageCount = ((Cutting)art).getPageCount().intValue(); 
+                    if (null != path) {
+                        fa = new FileAnnotations(app.getResource(path));
+                    } else {
+                        errs.add("", new ActionMessage("error.printarticle.missing", hit.getArticle().toString()));
+                    }
+                }
+                if (fa != null) {
+                	fa.addAnnotation(new Annotation(pageNumber, Annotation.PAGE_NUMBER));
+                	articles.add(fa);
+                	pageNumber += pageCount;
+                }
+            }
+        }
+        
+        if (articles.size() > 0) {
+
+        	//Only add the page annotation if page numbering is on
+        	if (user.getStyle().getPageNumber().booleanValue()) {
+        		Iterator<FileAnnotations> fit = articles.iterator();
+        		while (fit.hasNext()) {
+        			FileAnnotations fa = fit.next();
+        			fa.addAnnotation(new Annotation(pageNumber-1, Annotation.PAGE_COUNT));
+        			fa.addAnnotation(new Annotation("${page} / ${pages}", 0, 0, 570, 20, Annotation.ALIGN_CENTER, 14, 0, "Trebuchet MS"));
+        		}
+        	}
+
+        	// Add a summary to the start of the pdf file
+        	if (user.getStyle().getSummary().booleanValue()) {
+            	URL summary = createPDFSummary(tool, user, app);
+            	FileAnnotations fa = new FileAnnotations(summary);
+            	articles.add(0, fa);
+            }
+
+        	PDFMaker.startMaker(tempFolder, user.getLoginID(), articles);
+        	return "retry";
+        } else {
+            errs.add("noarticles", new ActionMessage("error.printarticle.noarticles"));
+            return "failure";
+        }
+    }
+
+    /**
+     * Checks through a list of articles and returns true if they number less
+     * than 100 and are all from the eClips system
+     * @param articles the article to check
+     * @return true if they are all eClips articles
+     */
+    private boolean isAlleClips(List<Article> articles) {
+    	if (articles.size() > 100) {
+    		return false;
+    	}
+    	Iterator<Article> it = articles.iterator();
+    	while (it.hasNext()) {
+    		Article article = it.next();
+    		if (article.getNlaID() == null) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    
+    /**
+     * Creates a String containing html encoded data based on the user's style's
+     * printsummary template and stores the String as an attribute of the request.
+     * 
+     * @param request the current request
+     * @param user the user making the request
+     * @param app the ServletContext
+     * @param doc the DOM Document containing the data
+     * @throws MalformedURLException
+     * @throws XMLException
+     */
+    private void printSummary(HttpServletRequest request, Login user, ServletContext app, Document doc) throws MalformedURLException, XMLException {
+        String template = WebUtilities.getResource(app, user.getStyle().getFolder() + "templates/", "default/templates/", user.getStyle().getPrintSummary());
+        InputStream is = app.getResourceAsStream(template);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        URIResolver uriResolver = new MWSWebResolver(app, user.getStyle(), "templates/");
+        baos = (ByteArrayOutputStream)XMLFactory.transform(XMLFactory.source(doc), XMLFactory.source(is), XMLFactory.result(baos), uriResolver);
+        String summary = new String(baos.toByteArray());
+        request.setAttribute("printSummary", summary);
+    }
+
+    /**
+     * Creates an XML Document which is used to produce the textual output of
+     * the Tool Action (if any).
+     * 
+     * @param tool the ToolForm containing the data
+     * @param user the user makin the request
+     * @return a DOM Document
+     * @throws XMLException
+     */
+    private Document createToolDocument(ToolForm tool, Login user) throws XMLException {
+        Map<Long, Article> articles = new LinkedHashMap<Long, Article>();
+        List<StoryOrder> stories = new ArrayList<StoryOrder>();
+        int page = 1;
+        Iterator<HitSortSection> it = tool.getHitSortSections().iterator();
+        while (it.hasNext()) {
+            HitSortSection hss = it.next();
+            Hit hit = hss.getHit();
+            Article art = hit.getArticle();
+            if (!articles.containsKey(art.getArticleID())) {
+                articles.put(art.getArticleID(), art);
+            }
+            StoryOrder so = new StoryOrder(hss);
+            int pageCount = calcPageCount(hss.getHit().getArticle(), user);
+            if (pageCount == 0) {
+            	so.setPage(0);
+            } else {
+            	so.setPage(page);
+            	page += pageCount;
+            }
+            stories.add(so);
+            Iterator<AlsoOrder> alsos = so.getAlsoOrder().iterator();
+            while (alsos.hasNext()) {
+                AlsoOrder ao = alsos.next();
+                int alsoCount = calcPageCount(ao.getHit().getArticle(), user);
+                if (alsoCount == 0) {
+                	ao.setPage(0);
+                } else {
+                	ao.setPage(page);
+                	page += alsoCount;
+                }
+                if(!articles.containsKey(ao.getArticleID())) {
+                    articles.put(ao.getArticleID(), ao.getHit().getArticle());
+                }
+            }
+        }
+        
+        XMLFactory factory = XMLFactory.getInstance();
+        try {
+            Document doc = XMLFactory.newDocument("tool");
+            Element root = doc.getDocumentElement();
+            factory.createSortingNode(doc, root, stories, false);
+            factory.createArticlesNode(doc, root, articles, false);
+
+            Element node = doc.createElement("user");
+            node.setAttribute("id", user.getLoginID().toString());
+            if (user.getNlaUserID() != null) {
+                node.setAttribute("nlaid", user.getNlaUserID().toString());
+            }
+            root.appendChild(node);
+            XMLFactory.addNode(doc, node, "login-name", user.getLoginName());
+            XMLFactory.addNode(doc, node, "password", user.getPassword());
+            XMLFactory.addNode(doc, node, "user-name", user.getUserName());
+
+            
+            Element nd = doc.createElement("recipient");
+            XMLFactory.addNode(doc, nd, "login-name", user.getLoginName());
+            if (user.getNlaUserID() == null) {
+                XMLFactory.addNode(doc, nd, "nlaid", "");
+            } else {
+                XMLFactory.addNode(doc, nd, "nlaid", user.getNlaUserID().toString());
+            }
+            XMLFactory.addNode(doc, nd, "from-name", tool.getFromName());
+            XMLFactory.addNode(doc, nd, "from-address", tool.getFromAddress());
+            XMLFactory.addNode(doc, nd, "to-name", tool.getToName());
+            XMLFactory.addNode(doc, nd, "to-address", tool.getToAddress());
+            XMLFactory.addNode(doc, nd, "company", tool.getCompany());
+            XMLFactory.addNode(doc, nd, "subject", tool.getSubject());
+            XMLFactory.addNode(doc, nd, "message", tool.getMessage());
+            XMLFactory.addNode(doc, nd, "max-items", tool.getMaxItems());
+            XMLFactory.addNode(doc, nd, "max-size", tool.getMaxSize());
+            root.appendChild(nd);
+            
+            NodeList nl = doc.getElementsByTagName("article");
+            for (int i = 0; i < nl.getLength(); i++) {
+                Element article = (Element)nl.item(i);
+                Element file = (Element)article.getElementsByTagName("file").item(0);
+                String value = user.getLoginName() + user.getPassword() + "/action/clip?clip=" + ((Text)file.getFirstChild()).getData();
+                String hash = Integer.toHexString(value.hashCode());
+                XMLFactory.addNode(doc, article, "hash", hash);
+            }
+            String file = this.getServlet().getServletContext().getRealPath("/WEB-INF/tool.xml");
+            XMLFactory.saveDocument(doc, file);
+            
+            return doc;
+        } catch (XMLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private int calcPageCount(Article a, Login user) {
+        Long nlaID = user.getNlaUserID();
+        boolean nlaUser = true;
+        if (nlaID == null || nlaID.equals(new Long(0))) {
+        	nlaUser = false;
+        }
+    	if (a instanceof Cutting) {
+            Cutting c = (Cutting)a;
+            if (c.getNlaID() != null) {
+            	return nlaUser ? c.getPageCount().intValue() : 0;
+            } else {
+            	if (!c.getSource().getCopyright().getRestricted().booleanValue()){
+            		return c.getPageCount().intValue();
+            	} else {
+            		return 0;
+            	}
+            }
+        } else {
+        	return 0;
+        }
+    }
+    
+    private URL createPDFSummary(ToolForm tool, Login user, ServletContext app) throws XMLException, MalformedURLException {
+    	Document doc = createToolDocument(tool, user);
+    	
+    	String template = WebUtilities.getResource(app, user.getStyle().getFolder() + "templates/", "default/templates/", user.getStyle().getPrintArticle());
+        InputStream is = app.getResourceAsStream(template);
+
+        File tempFolder = (File)app.getAttribute("javax.servlet.context.tempdir");
+        File pdfFile = new File(tempFolder, user.getLoginID() + "-s.pdf");
+        OutputStream os = null;
+        try {
+            URIResolver uriResolver = new MWSWebResolver(app, user.getStyle(), "templates/");
+        	os = XMLFactory.transform(XMLFactory.source(doc), XMLFactory.source(is), XMLFactory.result(pdfFile.getAbsolutePath()), MimeConstants.MIME_PDF, uriResolver, "", 0);
+        	return pdfFile.toURI().toURL();
+        } finally {
+        	try {
+        		os.close();
+        	} catch (Throwable t) {
+        		
+        	}
+        }
+        
+    }
+    
+}

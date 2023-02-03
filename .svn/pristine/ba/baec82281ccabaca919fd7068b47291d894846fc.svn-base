@@ -1,0 +1,43 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<html:xhtml/>
+<div class="display info">
+    <h2><fmt:message key="title.styles"/></h2>
+    <p><html:link action="admin-style?styleID=-1"><html:img src="image?resource=new-style16.gif" alt="" title="" styleClass="icon"/> <fmt:message key="menubar.new.style"/></html:link></p>
+    <display:table name="styles" id="style" pagesize="25"  requestURI="/action/admin-list?sorting=true" sort="list" export="true">
+	    <display:column property="styleName"      titleKey="style.stylename" sortable="true" headerClass="sortable"/>
+    	<display:column property="folder"         titleKey="style.folder"  sortable="true" headerClass="sortable"/>
+    	<display:column property="css"            titleKey="style.css"  sortable="true" headerClass="sortable"/>
+    	<display:column                           titleKey="prompt.pages">
+			<table>
+				<tr><th><html:img src="image?resource=home16.gif" alt="" titleKey="style.homepage" styleClass="icon" /></th><td>${style.home}</td></tr>
+				<tr><th><html:img src="image?resource=news16.gif" alt="" titleKey="style.newspage" styleClass="icon" /></th><td>${style.news}</td></tr>
+				<tr><th><html:img src="image?resource=evaluation16.gif" alt="" titleKey="style.evalpage" styleClass="icon" /></th><td>${style.evaluation}</td></tr>
+				<tr><th><html:img src="image?resource=archive16.gif" alt="" titleKey="style.archivepage" styleClass="icon" /></th><td>${style.archive}</td></tr>
+			</table>
+    	</display:column>
+        <display:column property="brandingID"     titleKey="style.branding" sortable="true" headerClass="sortable"/>
+    	<display:column                           titleKey="style.templates">
+			<table>
+				<tr><th><fmt:message key="style.emailsummary.template"/></th><td>${style.emailSummary}</td></tr>
+				<tr><th><fmt:message key="style.emailarticle.template"/></th><td>${style.emailArticle}</td></tr>
+				<tr><th><fmt:message key="style.printsummary.template"/></th><td>${style.printSummary}</td></tr>
+				<tr><th><fmt:message key="style.printarticle.template"/></th><td>${style.printArticle}</td></tr>
+			</table>
+    	</display:column>
+    	<display:column                           titleKey="prompt.flags">
+			<table>
+				<tr><th><fmt:message key="style.pdf.pagenumber"/></th><td>${style.pageNumber}</td></tr>
+				<tr><th><fmt:message key="style.pdf.summary"/></th><td>${style.summary}</td></tr>
+			</table>
+		</display:column>
+    	<display:column titleKey="prompt.edit" media="html">
+	    	<html:link action="admin-style?styleID=${style.styleID}"><html:img altKey="prompt.edit" titleKey="prompt.edit" src="image?resource=edit16.gif"/></html:link>
+    	</display:column>
+    	<display:setProperty name="export.csv.filename" value="styles.csv"/>
+    	<display:setProperty name="export.excel.filename" value="styles.xls"/>
+    	<display:setProperty name="export.pdf.filename" value="styles.pdf"/>
+    </display:table>
+</div>

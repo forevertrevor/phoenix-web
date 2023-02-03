@@ -1,0 +1,7 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<html:xhtml/>
+<!-- Client Logo start -->
+<div class="clientlogo">
+	<html:img src="image?resource=logo.png&style=${user.style.styleID}" alt="logo" />
+</div>
+<!-- Client Logo end-->

@@ -1,0 +1,36 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+
+<html:xhtml/>
+<div class="info">
+    <h3><fmt:message key="title.edit.folder"/></h3>
+	<html:messages name="mediagen.folders.messages" id="msg" header="folder.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+	<html:messages name="mediagen.folders.errors" id="msg" header="folder.errors.header" footer="errors.footer">
+		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var foldersFormValidate = "mediagen.folders."</script>
+	<div class="validate" id="mediagen.folders.validate">
+	</div>
+	<html:form action="/folder-save">
+		<html:hidden property="command" value="save"/>
+		<html:hidden property="folderid"/>
+		<table class="form">
+			<tr>
+				<th><fmt:message key="folder.name"/></th>
+				<td><html:text property="foldername" size="50"/></td>
+			</tr>
+			<tr>
+				<th><fmt:message key="folder.desc"/></th>
+				<td><html:textarea property="folderdesc" rows="10" cols="50"/></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td><html:submit><fmt:message key="prompt.update" /></html:submit></td>
+			</tr>
+		</table>
+	</html:form>
+</div>

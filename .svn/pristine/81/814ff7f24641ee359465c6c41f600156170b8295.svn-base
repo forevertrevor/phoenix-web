@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib version="2.0">
+    
+    <description>Phoenix Including Library</description>
+    <display-name>Phoenix Include</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>inc</short-name>
+    <uri>http://mws-systems.co.uk/including</uri>
+
+    <function>
+        <name>include</name>
+        <function-class>com.mws.phoenix.web.functions.Including</function-class>
+        <function-signature>java.lang.String include(java.lang.String)</function-signature>
+    </function>
+</taglib>

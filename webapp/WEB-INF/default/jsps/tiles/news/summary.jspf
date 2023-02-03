@@ -1,0 +1,32 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<html:xhtml/>
+<div class="info display">
+		<c:set var="section" value=""/>
+        <c:forEach items="${items}" var="item">
+            <c:if test="${section ne item.sortSection.sortSectionName}">
+                <c:set var="section" value="${item.sortSection.sortSectionName}"/>
+                <h2>${item.sortSection.sortSectionName}</h2>
+            </c:if>
+            <h4>${item.hit.article.headline}</h4>
+            <p>
+                <c:choose>
+                    <c:when test="${empty(item.hit.summary)}">
+                        ${item.hit.article.summary}
+                    </c:when>
+                    <c:otherwise>
+                        ${item.hit.summary}
+                    </c:otherwise>
+                </c:choose>
+            </p>
+            <p>
+                <i>${item.hit.article.attribution}
+                <c:forEach var="also" items="${item.hit.alsoMentioned}">
+                    , ${also.article.attribution}
+                </c:forEach>
+                </i>
+            </p>
+        </c:forEach>
+</div>

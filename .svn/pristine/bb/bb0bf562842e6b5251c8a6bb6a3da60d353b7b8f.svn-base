@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN" "http://jakarta.apache.org/struts/dtds/tiles-config_1_1.dtd">
+
+<tiles-definitions>
+
+	<!-- This is the base layout for the news pages -->
+	<definition name=".press.default.base" path="/WEB-INF/default/jsps/layout/standard.jsp">
+		<put name="title" value="Phoenix"/>
+		<put name="menu" value="tiles/standard/menu.jspf"/>
+		<put name="toolbar" value=".press.toolbar.default"/>
+		<put name="info" value="${news}"/>
+		<put name="footer" value="tiles/standard/footer.jspf"/>
+	</definition>
+
+   	<!-- This is the layout for the default news toolbar -->
+	<definition name=".press.toolbar.default" path="/WEB-INF/default/jsps/layout/toolbar.jsp" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="logo" value="tiles/standard/logo.jspf"/>
+		<put name="form" value="tiles/news/form.jspf"/>
+		<put name="buttons" value="tiles/news/buttons.jspf"/>
+		<put name="groupmessage" value="tiles/news/message.jspf"/>
+	</definition>
+
+   	<!-- This is the layout for the default archive toolbar -->
+	<definition name=".press.toolbar.archive" path="/WEB-INF/default/jsps/layout/toolbar.jsp" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="logo" value="tiles/standard/logo.jspf"/>
+		<put name="form" value="tiles/news/archiveform.jspf"/>
+		<put name="buttons" value="tiles/news/buttons.jspf"/>
+		<put name="groupmessage" value="tiles/news/message.jspf"/>
+	</definition>
+
+   	<!-- This is the layout for the default folders toolbar -->
+	<definition name=".press.toolbar.folders" path="/WEB-INF/default/jsps/layout/toolbar.jsp" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="logo" value="tiles/standard/logo.jspf"/>
+		<put name="form" value="tiles/news/foldersform.jspf"/>
+		<put name="buttons" value="tiles/news/buttons.jspf"/>
+		<put name="groupmessage" value="tiles/news/message.jspf"/>
+	</definition>
+
+   	<!-- This is the layout for the default search toolbar -->
+	<definition name=".press.toolbar.search" path="/WEB-INF/default/jsps/layout/toolbar.jsp" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="logo" value="tiles/standard/logo.jspf"/>
+		<put name="form" value="tiles/news/searchform.jspf"/>
+		<put name="buttons" value="tiles/news/buttons.jspf"/>
+		<put name="groupmessage" value="tiles/news/message.jspf"/>
+	</definition>
+
+    <!-- This is the layout for the simple news toolbar -->
+	<definition name=".press.toolbar.simple" path="/WEB-INF/default/jsps/layout/toolbar.jsp" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="logo" value="tiles/standard/logo.jspf"/>
+		<put name="form" value="tiles/news/simpleform.jspf"/>
+		<put name="buttons" value="tiles/news/buttons.jspf"/>
+		<put name="groupmessage" value="tiles/news/message.jspf"/>
+	</definition>
+
+	<!-- This is the layout for the article display page -->
+	<definition name=".press.default.news" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media - News"/>
+		<put name="info" value="tiles/news/news.jspf"/>
+	</definition>
+
+	<!-- This is the layout for the article display page -->
+	<definition name=".press.default.archive" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media - News"/>
+		<put name="toolbar" value=".press.toolbar.archive"/>
+		<put name="info" value="tiles/news/archive.jspf"/>
+	</definition>
+
+	<!-- This is the layout for the search display page -->
+	<definition name=".press.default.search" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media - News"/>
+		<put name="toolbar" value=".press.toolbar.search"/>
+		<put name="info" value="tiles/news/search.jspf"/>
+	</definition>
+
+    <!-- This is a simplified layout for the article display page -->
+    <definition name=".press.simple.news" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media - News"/>
+        <put name="toolbar" value=".press.toolbar.simple"/>
+        <put name="info" value="tiles/news/news.jspf"/>
+    </definition>
+    
+	<!-- This is the layout for the article edit page -->
+	<definition name=".press.default.edit" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${edit.title}"/>
+		<put name="info" value="tiles/news/edit.jspf"/>
+	</definition>
+	
+	<!-- layout for view tool page -->
+	<definition name=".press.tool.view" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${user.title}"/>
+		<put name="info" value="tiles/news/view.jspf"/>
+	</definition>
+	<definition name=".press.tool.faxback" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${user.title}"/>
+		<put name="info" value="tiles/news/faxback.jspf"/>
+	</definition>
+	<definition name=".press.tool.emailarticle" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${user.title}"/>
+		<put name="info" value="tiles/news/emailarticle.jspf"/>
+	</definition>
+	<definition name=".press.tool.printarticle" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${user.title}"/>
+        <put name="menu" value="tiles/news/blank.jspf"/>
+		<put name="toolbar" value="tiles/news/blank.jspf"/>
+		<put name="info" value=".press.sub.printarticle"/>
+		<put name="footer" value="tiles/news/blank.jspf"/>
+	</definition>
+	<definition name=".press.tool.emailsummary" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${user.title}"/>
+		<put name="info" value="tiles/news/emailsummary.jspf"/>
+	</definition>
+	<definition name=".press.tool.printsummary" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${user.title}"/>
+        <put name="menu" value="tiles/news/blank.jspf"/>
+		<put name="toolbar" value="tiles/news/blank.jspf"/>
+		<put name="info" value=".press.sub.printsummary"/>
+		<put name="footer" value="tiles/news/blank.jspf"/>
+	</definition>
+
+	<definition name=".press.summary" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media Printer Friendly Page"/>
+        <put name="menu" value="tiles/news/blank.jspf"/>
+		<put name="toolbar" value="tiles/news/blank.jspf"/>
+		<put name="info" value="tiles/news/summary.jspf"/>
+		<put name="footer" value="tiles/news/blank.jspf"/>
+	</definition>
+
+	<!-- This is the layout for the article display page -->
+	<definition name=".press.default.folders" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${news.title}"/>
+		<put name="toolbar" value=".press.toolbar.folders"/>
+		<put name="info" value="tiles/news/folders.jspf"/>
+	</definition>
+
+	<definition name=".press.viewfolders" extends=".press.default.folders" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media - Folders"/>
+		<put name="info" value="tiles/news/folders.jspf"/>
+	</definition>
+
+	<definition name=".press.viewfolder" extends=".press.default.folders" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media - Folder"/>
+		<put name="info" value="tiles/news/folder.jspf"/>
+	</definition>
+
+	<definition name=".press.editfolder" extends=".press.default.folders" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media - Edit Folder"/>
+		<put name="info" value="tiles/news/editfolder.jspf"/>
+	</definition>
+
+	<definition name=".press.foldersummary" extends=".press.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="XY Media Printer Friendly Page"/>
+        <put name="menu" value="tiles/news/blank.jspf"/>
+		<put name="toolbar" value="tiles/news/blank.jspf"/>
+		<put name="info" value="tiles/news/folder-summary.jspf"/>
+		<put name="footer" value="tiles/news/blank.jspf"/>
+	</definition>
+
+  	<!-- Blank definition 
+	<definition name=".welcome.[PageID]" extends=".welcome.base">
+		<put name="title" value=""/>
+		<put name="info" value="/welcome/info/[PageInfo].jspf"/>
+	</definition>
+-->
+</tiles-definitions>

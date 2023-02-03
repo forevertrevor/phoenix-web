@@ -1,0 +1,15 @@
+<%@ taglib prefix="fn" uri="/WEB-INF/tags/formatting.tld" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page language="java" %>
+<!-- Start of group message -->
+<div class="groupmessage">
+    <c:choose>
+        <c:when test="${user.level ge globals.USER_INTERNAL}">
+            <b><fmt:message key="info.internal.only"/></b>
+	    </c:when>
+	    <c:otherwise>
+			${fn:htmlEscape(user.group.pressMessage)}
+		</c:otherwise>
+	</c:choose>
+</div>
+<!-- End of group message -->

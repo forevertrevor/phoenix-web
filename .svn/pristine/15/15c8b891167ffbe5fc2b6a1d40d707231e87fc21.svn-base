@@ -1,0 +1,39 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+
+<html:xhtml/>
+<div class="info">
+    <h3><fmt:message key="title.folders"/></h3>
+	<html:messages name="mediagen.folders.messages" id="msg" header="folder.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+	<html:messages name="mediagen.folders.errors" id="msg" header="folder.errors.header" footer="errors.footer">
+		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var foldersFormValidate = "mediagen.folders."</script>
+	<div class="validate" id="mediagen.folders.validate">
+	</div>
+    <p><html:img src="image?resource=new-folder16.gif" styleClass="icon"/> <html:link action="folder-edit?command=edit&folderid=-1"><fmt:message key="menubar.new.folder"/></html:link></p>
+    <div class="display">
+        <display:table id="folder" list="${foldersForm.folders}" pagesize="25" requestURI="/action/folders">
+            <display:column titleKey="folder.name"                  sortable="true">
+              	<html:img altKey="folder.folder" titleKey="folder.folder" src="image?resource=folder-full16.gif" styleClass="icon"/> <html:link action="folders?command=list&folderid=${folder.folderID}">${folder.folderName}</html:link>
+         	</display:column>
+	        <display:column titleKey="folder.size" property="folderSize" sortable="true"/>
+	        <display:column titleKey="folder.desc" property="folderDesc"/>
+	        <display:column titleKey="folder.creator" property="creator.userName" sortable="true"/>
+    	    <display:column                    titleKey="prompt.delete">
+				<c:if test="${folder.creator.loginID eq user.loginID or user.level ge globals.USER_ADMIN}">
+	    	    	<html:link action="folders?command=delete&folderid=${folder.folderID}"><html:img altKey="prompt.delete" titleKey="prompt.delete" src="image?resource=delete16.gif"/></html:link>
+    	    	</c:if>
+	    	</display:column>
+    	    <display:column                    titleKey="prompt.edit">
+				<c:if test="${folder.creator.loginID eq user.loginID or user.level ge globals.USER_ADMIN}">
+	    	    	<html:link action="folder-edit?command=edit&folderid=${folder.folderID}"><html:img altKey="prompt.edit" titleKey="prompt.edit" src="image?resource=edit16.gif"/></html:link>
+    	    	</c:if>
+	    	</display:column>
+       	</display:table>
+    </div>
+</div>

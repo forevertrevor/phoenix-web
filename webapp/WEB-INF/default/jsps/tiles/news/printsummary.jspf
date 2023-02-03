@@ -1,0 +1,15 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+
+<html:html xhtml="true">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    	<link rel="stylesheet" type="text/css" href='<html:rewrite href="/action/style?property=css"/>' />
+        <title><fmt:message key="title.print.summary"/></title>
+    </head>
+    <body class="plain">
+        ${printSummary}
+    </body>
+</html:html>

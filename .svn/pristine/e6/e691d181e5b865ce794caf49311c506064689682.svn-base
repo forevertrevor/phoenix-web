@@ -1,0 +1,30 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+	<html:xhtml/>
+	<div class="info">
+		<script language="javascript" src="<html:rewrite href="script?resource=validate.js"/>" type="text/javascript"></script>
+		<html:javascript formName="/emailsummary" method="validateEmailSummary" cdata="false" staticJavascript="false" />
+		<h2><fmt:message key="title.email.summary" /></h2>
+   		<html:messages name="mediagen.tool.messages" id="msg" header="tool.messages.header" footer="messages.footer">
+			<b class="message">${msg}</b>
+		</html:messages>
+	    <html:messages name="mediagen.tool.errors" id="msg" header="tool.errors.header" footer="errors.footer">
+	   		<b class="error">${msg}</b>
+   		</html:messages>
+   		<script type="text/javascript">var toolFormValidate = "mediagen.tool."</script>
+		<div class="validate" id="mediagen.tool.validate">
+    	</div>
+		<html:form action="/emailsummary" method="post" onsubmit="return validateEmailSummary(this);">
+			<html:hidden property="action" value="emailsummary" />
+			<table class="form">
+				<tr><th><fmt:message key="tool.from"/></th><td><html:text property="fromName" size="50"/></td></tr>
+				<tr><th><fmt:message key="tool.from.address" /></th><td><html:text property="fromAddress" size="50" /></td></tr>
+				<tr><th><fmt:message key="tool.to.address" /></th><td><html:text property="toAddress" size="50" /></td></tr>
+				<tr><th><fmt:message key="tool.subject" /></th><td><html:text property="subject" size="50" /></td></tr>
+				<tr><th><fmt:message key="tool.message" /></th><td><html:textarea property="message" rows="8" cols="50" /></td></tr>
+				<tr><th>&nbsp;</th><td><html:submit><fmt:message key="prompt.send"/></html:submit></td></tr>
+			</table>
+		</html:form>
+		<%@ include file="articles.jspf" %>
+	</div>

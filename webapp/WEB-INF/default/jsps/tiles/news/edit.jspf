@@ -1,0 +1,92 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<html:xhtml/>
+<div class="info">
+    <h2><fmt:message key="title.edit.item" /></h2>
+    <%@ include file="/WEB-INF/default/jsps/tiles/messages.jspf" %>
+    <html:form action="/save" method="post" styleId="editform">
+	    <html:hidden property="id"/>
+    	<table class="form">
+	    	<tr>
+		    	<th><fmt:message key="source.source" /></th>
+			    <td>${itemForm.source}</td>
+    		</tr>
+	    	<tr>
+		    	<th><fmt:message key="article.articledate" /></th>
+			    <td>${itemForm.articleDate}</td>
+    		</tr>
+	    	<tr>
+		    	<th><fmt:message key="article.headline" /></th>
+			    <td>
+    			    <c:choose>
+	    		        <c:when test="${user.level ge globals.USER_INTERNAL}">
+                            <html:text property="headline" size="65"/>
+                        </c:when>
+                        <c:otherwise>
+       				        ${itemForm.headline}
+                            <html:hidden property="headline"/>
+           				</c:otherwise>
+           			</c:choose>
+		    	</td>
+    		</tr>
+	    	<tr>
+		        <th><fmt:message key="article.summary" /></th>
+			    <td><html:textarea property="specificSummary" rows="10" cols="55"></html:textarea></td>
+    		</tr>
+	    	<tr>
+		    	<th><fmt:message key="article.withdrawn" /></th>
+			    <td>
+    			    <c:choose>
+	    		        <c:when test="${user.level ge globals.USER_INTERNAL}">
+                            <html:checkbox property="withdrawn"/>
+                        </c:when>
+                        <c:otherwise>
+                            <html:checkbox property="withdrawn" disabled="true"/>
+           				</c:otherwise>
+           			</c:choose>
+			    </td>
+    		</tr>
+	    	<tr>
+		    	<th>&nbsp;</th>
+			    <td>
+    				<div class="display">
+	    	    		<table>
+		    	    		<thead>
+			    	    		<tr><th><fmt:message key="sortsection.sortsection"/></th><th><fmt:message key="article.relevance"/></th></tr>
+				    	    </thead>
+    					    <tbody>
+            					<c:forEach items="${itemForm.sortSections}" var="section" varStatus="status">
+	        						<tr>
+		        						<th>${section.sortSectionName}</th>
+			        					<td>
+				        					<html:hidden property="sortSection[${status.index}].sortSectionID" value="${section.sortSectionID}"/>
+					        				<html:select property="sortSection[${status.index}].relevance">
+		    			        				<html:option value="0">0</html:option>
+	    					        			<html:option value="1">1</html:option>
+								        		<html:option value="2">2</html:option>
+									        	<html:option value="3">3</html:option>
+										        <html:option value="4">4</html:option>
+        										<html:option value="5">5</html:option>
+	        									<html:option value="6">6</html:option>
+		        								<html:option value="7">7</html:option>
+			        							<html:option value="8">8</html:option>
+				        						<html:option value="9">9</html:option>
+					        					<html:option value="10">10</html:option>
+						        			</html:select>
+							        	</td>
+    							    </tr>
+    	    					</c:forEach>
+	    	    			</tbody>
+		    	    	</table>
+    		    	</div>
+    	    	</td>
+        	</tr>
+	        <tr>
+        		<th></th>
+	        	<td><html:submit><fmt:message key="prompt.update" /></html:submit></td>
+  	        </tr>
+        </table>
+    </html:form>
+</div>

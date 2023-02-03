@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+	<!-- Templates to handle sorting section of xml -->
+	<!-- 
+	Usage:
+        <xsl:apply-templates select="sorting"/>
+	 -->
+
+	<xsl:import href="htmlarticle.xslf"/>
+
+	<xsl:template match="sorting">
+		<hr />
+		<xsl:if test="count(descendant::*) = 0">
+			<h3>No articles have been added to your account since the last alert.</h3>
+		</xsl:if>
+		<xsl:apply-templates select="sort-brief"/>
+	</xsl:template>
+
+    <xsl:template match="sort-brief">
+        <h3><xsl:value-of select="@name"/></h3>
+		<xsl:apply-templates select="sort-section"/>
+    </xsl:template>
+    
+	<xsl:template match="sort-section">
+		<h3><xsl:value-of select="@name"/> (<xsl:value-of select="@count"/>)</h3>
+		<xsl:apply-templates select="hit"/>
+	</xsl:template>		
+
+	<xsl:template match="hit">
+		<div>
+			<xsl:variable name="id" select="@article-id"/>
+            <b><xsl:value-of select="//article[@id=$id]/headline"/></b>
+    		<br />	
+			<xsl:value-of select="summary"/><br />
+            <xsl:apply-templates select="//article[@id=$id]"/>
+			<xsl:apply-templates select="also"/>
+            <br /><br />
+		</div>
+	</xsl:template>
+	
+	<xsl:template match="also">
+		<xsl:if test="position() = 1">
+			, 
+		</xsl:if>
+		<xsl:variable name="id" select="@article-id"/>
+		<xsl:apply-templates select="//article[@id=$id]"/>
+		<xsl:if test="position() != last()">
+			, 
+		</xsl:if>
+	</xsl:template>
+</xsl:stylesheet>

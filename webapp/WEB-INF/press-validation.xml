@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE form-validation PUBLIC "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.0//EN" "http://jakarta.apache.org/commons/dtds/validator_1_0.dtd">
+<form-validation>
+	<formset>
+		<form name="newsForm">
+			<field property="datefrom" depends="required,date">
+				<arg0 key="prompt.datefrom"/>
+				<arg1 key="prompt.dateformat"/>
+				<var>
+					<var-name>datePatternStrict</var-name>
+					<var-value>dd-MMM-yyyy</var-value>
+				</var>
+			</field>
+			<field property="dateto" depends="required,date">
+				<arg0 key="prompt.dateto"/>
+				<arg1 key="prompt.dateformat"/>
+				<var>
+					<var-name>datePatternStrict</var-name>
+					<var-value>dd-MMM-yyyy</var-value>
+				</var>
+			</field>
+		</form>
+
+		<form name="/faxback">
+			<field property="fromName" depends="required">
+				<arg0 key="prompt.from"/>
+			</field>
+			<field property="toName" depends="required">
+				<arg0 key="prompt.to"/>
+			</field>
+			<field property="company" depends="required">
+				<arg0 key="prompt.company"/>
+			</field>
+			<field property="toAddress" depends="required,mask">
+				<arg0 key="prompt.fax"/>
+				<msg name="mask" key="errors.mask.fax"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^[0-9]([0-9]|\s)*$</var-value>
+				</var>
+			</field>
+		</form>
+
+		<form name="/emailarticle">
+			<field property="fromAddress" depends="required">
+				<arg0 key="prompt.from"/>
+			</field>
+			<field property="toAddress" depends="required">
+				<arg0 key="prompt.to"/>
+				<var>
+					<var-name>delim</var-name>
+					<var-value>,</var-value>
+				</var>
+			</field>
+			<field property="subject" depends="required">
+				<arg0 key="prompt.subject"/>
+			</field>
+		</form>
+
+		<form name="/emailsummary">
+			<field property="fromAddress" depends="required">
+				<arg0 key="prompt.from"/>
+			</field>
+			<field property="toAddress" depends="required">
+				<arg0 key="prompt.to"/>
+				<var>
+					<var-name>delim</var-name>
+					<var-value>,</var-value>
+				</var>
+			</field>
+			<field property="subject" depends="required">
+				<arg0 key="prompt.subject"/>
+			</field>
+		</form>
+
+		<!--
+		<form name="">
+			<field property="" depends="">
+				<arg0 key=""/>
+			</field>
+		</form>
+		-->
+	</formset>
+</form-validation>

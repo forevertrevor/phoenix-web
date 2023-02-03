@@ -1,0 +1,19 @@
+<Context path="/phoenix" docBase="phoenix" debug="99" reloadable="true">
+    <Logger className="org.apache.catalina.logger.FileLogger"
+               prefix="Phoenix_"
+               suffix=".log"
+            timestamp="true"/>
+
+    <Loader checkInterval="3"/>
+
+    <Resource name="mail/session" auth="Container" type="javax.mail.Session"/>
+    <ResourceParams name="mail/session">
+      <parameter>
+        <name>mail.smtp.host</name>
+        <value>localhost</value>
+      </parameter>
+    </ResourceParams>
+    <!-- Comment this valve element in to ensure Phoenix app can only be accessed via XY servers -->
+    <!--  <Valve className="org.apache.catalina.valves.RemoteAddrValve" allow="178\.62\.58\.14|178\.62\.70\.108"/> -->
+    
+</Context>

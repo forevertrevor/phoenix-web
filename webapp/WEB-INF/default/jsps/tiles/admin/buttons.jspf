@@ -1,0 +1,19 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<html:xhtml/>
+<!-- Start of admin buttons -->
+	<div class="buttons menubar centre">
+		<span><html:link action="admin?page=user.hash"><html:img src="image?resource=auto-login16.gif" alt="" title="" styleClass="icon"/> <fmt:message key="menubar.autologin" /></html:link></span>
+	    <c:if test="${user.level ge globals.USER_ADMIN}">
+	        <span><html:link action="admin-group?groupID=0"><html:img src="image?resource=group16.gif" alt="" title="" styleClass="icon"/> <fmt:message key="menubar.usergroup" /></html:link></span>
+	    </c:if>
+		<c:if test="${user.level ge globals.USER_INTERNAL}">
+			<span class="section"><html:link action="search"><html:img src="image?resource=search16.gif" alt="" title="" styleClass="icon"/> <fmt:message key="menubar.search" /></html:link></span>
+			<span class="section"><html:link action="admin-group?groupID=-1"><html:img src="image?resource=new-group16.gif" alt="" title="" styleClass="icon"/> <fmt:message key="menubar.new.group"/></html:link></span>
+			<span><html:link action="admin-style?styleID=-1"><html:img src="image?resource=new-style16.gif" alt="" title="" styleClass="icon"/> <fmt:message key="menubar.new.style"/></html:link></span>
+			<span><html:link action="admin-user?loginID=-1"><html:img src="image?resource=new-user16.gif" alt="" title="" styleClass="icon"/> <fmt:message key="menubar.new.user"/></html:link></span>
+		</c:if>
+	</div>
+<!-- End of admin buttons -->

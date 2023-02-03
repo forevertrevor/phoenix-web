@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+	<!-- Templates to output article attributions -->
+	<!-- 
+	Usage:
+		<xsl:variable name="id" select="@article-id"/>
+        <xsl:apply-templates select="//article[@id=$id]"/>
+	 -->
+	 
+	<xsl:import href="hash.xslf"/>
+	<xsl:import href="string.xslf"/>
+	 
+	<!-- Template for Cuttings -->
+	<xsl:template match="article[@class='Cutting']">
+                <xsl:choose>
+                	<xsl:when test="@withdrawn = 'true'">
+                		<xsl:call-template name="cutting-nolink"/><xsl:text> (w)</xsl:text>
+                	</xsl:when>
+                    <xsl:when test="@nlaid and /alert/user/@nlaid and ((source/copyright = 'NI' and /alert/user/@exclude-ni = 'false') or source/copyright != 'NI')">
+						<xsl:call-template name="cutting-link"/>
+                    </xsl:when>
+                    <xsl:when test="source/copyright/@restricted = 'true' or (/alert/user/@nlaid and /alert/user/@exclude-ni = 'true' and source/copyright = 'NI')">
+						<xsl:call-template name="cutting-faxback"/>
+                    </xsl:when>
+                    <xsl:when test="file != ''">
+						<xsl:call-template name="cutting-link"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                		<xsl:call-template name="cutting-nolink"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+	</xsl:template>
+
+	<!-- A Cutting without a link -->
+	<xsl:template name="cutting-nolink">
+<xsl:value-of select="source/name"/><xsl:if test="section != 'Main'"> (<xsl:value-of select="section"/>)</xsl:if>, <xsl:value-of select="article-date/default-date"/>, page <xsl:value-of select="page"/><xsl:if test="edition != 'First'">, <xsl:value-of select="edition"/></xsl:if>
+	</xsl:template>
+
+	<!-- A Cutting with a link -->
+	<xsl:template name="cutting-link">
+		<xsl:variable name="id" select="@id"/>
+		<xsl:variable name="hit-id" select="//sort-section//*[@article-id=$id]/@hit-id"/>
+		<xsl:variable name="hash-value">
+			<xsl:call-template name="tobase">
+				<xsl:with-param name="number">
+					<xsl:call-template name="hash">
+						<xsl:with-param name="hash">0</xsl:with-param>
+						<xsl:with-param name="string"><xsl:value-of select="/alert/user/login-name"/><xsl:value-of select="/alert/user/password"/>/action/clip?id=<xsl:value-of select="$hit-id"/></xsl:with-param>
+					</xsl:call-template>
+				</xsl:with-param>
+				<xsl:with-param name="base">16</xsl:with-param>
+			</xsl:call-template>
+ 		</xsl:variable>
+<xsl:value-of select="source/name"/><xsl:if test="section != 'Main'"> (<xsl:value-of select="section"/>)</xsl:if>, <xsl:value-of select="article-date/default-date"/>, page <xsl:value-of select="page"/><xsl:if test="edition != 'First'">, <xsl:value-of select="edition"/></xsl:if>
+&lt;http://xy.media/phoenix/action/auto-login?user=<xsl:value-of select="/alert/user/login-name"/>&amp;hash=<xsl:value-of select="$hash-value"/>&amp;url=/action/clip?id=<xsl:value-of select="$hit-id"/>&gt;
+ 		<xsl:value-of select="$n"/>
+	</xsl:template>
+	
+	<!-- A Cutting with a faxback link -->
+	<xsl:template name="cutting-faxback">
+		<xsl:variable name="id" select="@id"/>
+		<xsl:variable name="hit-id" select="//sort-section//*[@article-id=$id]/@hit-id"/>
+		<xsl:variable name="fax-hash">
+			<xsl:call-template name="tobase">
+				<xsl:with-param name="number">
+					<xsl:call-template name="hash">
+						<xsl:with-param name="hash">0</xsl:with-param>
+						<xsl:with-param name="string"><xsl:value-of select="/alert/user/login-name"/><xsl:value-of select="/alert/user/password"/>/action/tool?fwd=faxback&amp;selectForm=true&amp;select=<xsl:value-of select="$hit-id"/></xsl:with-param>
+					</xsl:call-template>
+				</xsl:with-param>
+				<xsl:with-param name="base">16</xsl:with-param>
+			</xsl:call-template>
+ 		</xsl:variable>
+    	<xsl:value-of select="source/name"/><xsl:if test="section != 'Main'"> (<xsl:value-of select="section"/>)</xsl:if>, <xsl:value-of select="article-date/default-date"/>, page <xsl:value-of select="page"/><xsl:if test="edition != 'First'">, <xsl:value-of select="edition"/></xsl:if><xsl:text> (Faxback)</xsl:text>
+&lt;http://xy.media/phoenix/action/auto-login?user=<xsl:value-of select="/alert/user/login-name"/>&amp;hash=<xsl:value-of select="$fax-hash"/>&amp;url=/action/tool?fwd=faxback~selectForm=true~select=<xsl:value-of select="$hit-id"/>&gt;
+ 		<xsl:value-of select="$n"/>
+	</xsl:template>
+
+	<!-- Template for Webpages -->
+	<xsl:template match="article[@class='Webpage']">
+            <xsl:choose>
+              	<xsl:when test="@withdrawn = 'true'">
+					<xsl:call-template name="webpage-nolink"/> (w)
+               	</xsl:when>
+               	<xsl:otherwise>
+					<xsl:call-template name="webpage-link"/>
+				</xsl:otherwise>
+			</xsl:choose>
+	</xsl:template>
+	
+	<!-- A Webpage with no link -->
+	<xsl:template name="webpage-nolink">
+		<xsl:value-of select="source/name"/>, <xsl:value-of select="article-date/default-date"/>
+	</xsl:template>
+
+	<!-- A Webpage with a link -->
+	<xsl:template name="webpage-link">
+		<xsl:value-of select="source/name"/>, <xsl:value-of select="article-date/default-date"/>
+		<xsl:value-of select="url"/>
+ 		<xsl:value-of select="$n"/>
+	</xsl:template>
+
+	<!-- Template for RSS Items -->
+	<xsl:template match="article[@class='RSS Item']">
+            <xsl:choose>
+              	<xsl:when test="@withdrawn = 'true'">
+					<xsl:call-template name="rssitem-nolink"/> (w)
+               	</xsl:when>
+               	<xsl:otherwise>
+					<xsl:call-template name="rssitem-link"/>
+				</xsl:otherwise>
+			</xsl:choose>
+	</xsl:template>
+
+	<!-- An RSS Item with no link -->
+	<xsl:template name="rssitem-nolink">
+		<xsl:value-of select="source/name"/>, <xsl:value-of select="article-date/default-date"/>
+	</xsl:template>
+
+	<!-- An RSS Item with a link -->
+	<xsl:template name="rssitem-link">
+		<xsl:value-of select="source/name"/>, <xsl:value-of select="article-date/default-date"/>
+		<xsl:value-of select="link"/>
+ 		<xsl:value-of select="$n"/>
+	</xsl:template>
+
+	<!-- Default template for undefined Article types -->
+	<xsl:template match="article">
+            <xsl:choose>
+              	<xsl:when test="@withdrawn = 'true'">
+					<xsl:call-template name="article-nolink"/> (w)
+               	</xsl:when>
+               	<xsl:otherwise>
+					<xsl:call-template name="article-nolink"/>
+	            </xsl:otherwise>
+            </xsl:choose>
+	</xsl:template>
+
+	<xsl:template name="article-nolink">
+		<xsl:value-of select="source/name"/>, <xsl:value-of select="article-date/default-date"/>
+	</xsl:template>
+</xsl:stylesheet>

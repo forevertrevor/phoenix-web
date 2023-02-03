@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN" "http://jakarta.apache.org/struts/dtds/tiles-config_1_1.dtd">
+<tiles-definitions>
+	<!-- This is the base layout for the admin pages -->
+	<definition name=".admin.default.base" path="/WEB-INF/default/jsps/layout/standard.jsp">
+		<put name="title" value="Phoenix Web Administration"/>
+		<put name="menu" value="tiles/standard/menu.jspf"/>
+		<put name="toolbar" value=".admin.toolbar.default"/>
+		<put name="info" value="${admin}"/>
+		<put name="footer" value="tiles/standard/footer.jspf"/>
+	</definition>
+        
+	<!-- This is the layout for the default admin toolbar -->
+	<definition name=".admin.toolbar.default" path="/WEB-INF/default/jsps/layout/toolbar.jsp" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="logo" value="tiles/standard/logo.jspf"/>
+		<put name="form" value="tiles/admin/form.jspf"/>
+		<put name="buttons" value="tiles/admin/buttons.jspf"/>
+		<put name="groupmessage" value="tiles/admin/message.jspf"/>
+	</definition>
+
+    <!-- This is the layout for the admin home page -->
+    <definition name=".admin.default.home" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/admin.jspf"/>
+    </definition>
+    
+    <!-- Layout for Groups page -->
+    <definition name=".admin.default.groups" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/groups.jspf"/>
+    </definition>
+
+    <!-- Layout for Group page -->
+    <definition name=".admin.default.group" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/group.jspf"/>
+    </definition>
+            
+    <!-- Layout for Styles page -->
+    <definition name=".admin.default.styles" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/styles.jspf"/>
+    </definition>
+    
+    <!-- Layout for Style page -->
+    <definition name=".admin.default.style" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/style.jspf"/>
+    </definition>
+
+    <!-- Layout for Users page -->
+    <definition name=".admin.default.users" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/users.jspf"/>
+    </definition>
+
+    <!-- Layout for User page -->
+    <definition name=".admin.default.user" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/user.jspf"/>
+    </definition>
+
+    <!-- Layout for User Brief Access page -->
+    <definition name=".admin.default.user.briefs" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/userbrief.jspf"/>
+    </definition>
+    
+    <!-- Layout for User Programme Access page -->
+	<!-- 
+    <definition name=".admin.default.user.eval" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/usereval.jspf"/>
+    </definition>
+    -->
+    
+    <!-- Layout for Alerts page -->
+    <definition name=".admin.default.alerts" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/alerts.jspf"/>
+    </definition>
+
+    <!-- Layout for Archives page -->
+    <definition name=".admin.default.archives" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/archives.jspf"/>
+    </definition>
+
+    <!-- Layout for Archive page -->
+    <definition name=".admin.default.archive" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/archive.jspf"/>
+    </definition>
+
+    <!-- Layout for Finances page -->
+    <definition name=".admin.default.finances" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/finances.jspf"/>
+    </definition>
+
+    <!-- Layout for Finance page -->
+    <definition name=".admin.default.finance" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/finance.jspf"/>
+    </definition>
+
+    <!-- Layout for Alert page -->
+    <definition name=".admin.default.alert" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+        <put name="info" value="tiles/admin/alert.jspf"/>
+    </definition>
+
+    <!-- layout for edit/view user page -->
+	<definition name=".admin.user.user" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${user.title}"/>
+		<put name="info" value="tiles/admin/user.jspf"/>
+	</definition>
+
+    <!-- layout for edit/view group page -->
+	<definition name=".admin.user.group" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${group.title}"/>
+		<put name="info" value="tiles/admin/group.jspf"/>
+	</definition>
+    
+	<!-- layout for edit/view alert page -->
+	<definition name=".admin.user.alert" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${alert.title}"/>
+		<put name="info" value="tiles/admin/alert.jspf"/>
+	</definition>
+
+	<!-- layout for create auto login page -->
+	<definition name=".admin.user.hash" extends=".admin.default.base" controllerClass="com.mws.phoenix.web.tiles.PressController">
+		<put name="title" value="${hash.title}"/>
+		<put name="info" value="tiles/admin/hash.jspf"/>
+	</definition>
+
+</tiles-definitions>
+    

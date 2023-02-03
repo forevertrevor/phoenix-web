@@ -1,0 +1,130 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<html:xhtml/>
+<!-- News Item select form -->
+<div class="newsform">
+    <script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+    <html:javascript formName="newsForm" method="validateNews" cdata="false" staticJavascript="false" />
+	<script type="text/javascript" src='<html:rewrite href="script?resource=calendar.js"/>'></script>
+	<script type="text/javascript" src='<html:rewrite href="script?resource=anchorposition.js"/>'></script>
+	<script type="text/javascript" src='<html:rewrite href="script?resource=popupwindow.js"/>'></script>
+	<script type="text/javascript">
+		var popT = new PopupWindow('sourcetypes');
+		popT.autoHide();
+		popT.offsetX = 0;
+		popT.offsetY = 13;
+		
+		var popC = new PopupWindow('sourcecategories');
+		popC.autoHide();
+		popC.offsetX = 0;
+		popC.offsetY = 13;
+		
+	</script>
+	<html:messages name="mediagen.news.messages" id="msg" header="news.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+	<html:messages name="mediagen.news.errors" id="msg" header="news.errors.header" footer="errors.footer">
+		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var newsFormValidate = "mediagen.news."</script>
+	<div class="validate" id="mediagen.news.validate">
+	</div>
+	<html:form action="/folder" method="get" styleId="newsform" onsubmit="return validateNews(this);">
+		<html:hidden property="action" value="newsform"/>
+        <table class="form">
+            <tr>
+				<th><fmt:message key="folder.folder" /></th>
+				<td colspan="3">
+					<html:select property="acct">
+						<html:optionsCollection name="user" property="group.sortedFolders" label="folderName" value="folderID" />
+					</html:select>
+				</td>
+            </tr>
+            <tr>
+				<th><fmt:message key="date.date" /></th>
+				<td>
+                    <!-- All on one line to avoid line break -->
+					<a href='javascript:toggleRadio("dateType0")' class="nolink"><html:radio styleClass="radio" property="datetype" value="0" styleId="dateType0" />&nbsp;<fmt:message key="article.upload" />&nbsp;</a>
+					<a href='javascript:toggleRadio("dateType1")' class="nolink"><html:radio styleClass="radio" property="datetype" value="1" styleId="dateType1" />&nbsp;<fmt:message key="article.article" />&nbsp;</a>
+				</td>
+				<th><fmt:message key="date.between" /></th>
+				<td>
+				    <html:text styleId="datefrom" styleClass="text" property="datefrom" size="15" /><input class="button" type="button" name="cmdDateFrom" value="..." onClick="calendar('datefrom', 'dd-mmm-yyyy');" />
+					<fmt:message key="date.and" />&nbsp;<html:text styleId="dateto" styleClass="text" property="dateto" size="15" /><input  class="button" type="button" name="cmdDateTo" value="..." onClick="calendar('dateto', 'dd-mmm-yyyy');" />
+				</td>
+            </tr>
+            <tr>
+				<th><fmt:message key="article.summary" /></th>
+				<td>
+					<a href='javascript:toggleRadio("summary0")' class="nolink"><html:radio styleClass="radio" property="summary" value="0" styleId="summary0" />&nbsp;<fmt:message key="prompt.off" />&nbsp;</a>
+					<a href='javascript:toggleRadio("summary1")' class="nolink"><html:radio styleClass="radio" property="summary" value="1" styleId="summary1" />&nbsp;<fmt:message key="prompt.on" />&nbsp;</a>
+				</td>
+                <th><fmt:message key="prompt.pagesize"/></th>
+                <td>
+                    <html:select property="pageSize">
+                        <html:option value="0">All</html:option>
+                        <html:option value="25">25</html:option>
+                        <html:option value="50">50</html:option>
+                        <html:option value="75">75</html:option>
+                        <html:option value="100">100</html:option>
+                    </html:select>
+                </td>
+            </tr>
+            <tr>
+				<th><a href="#" onclick="popT.showPopup('sourceanchor');return false;"><fmt:message key="sourcetype.sourcetypes"/></a></th>
+				<td colspan="3">
+					<a name="sourceanchor" id="sourceanchor"> </a>
+					<div id="sourcetypedesc" style="visibility: hidden">${folderForm.sourceTypeFilter}</div>
+					<div id="sourcetypes" style="width:15em">
+						<span><html:multibox property="sourcetype" value="0" />All</span>
+						<c:forEach var="sourceType" items="${globals.sourceTypes}">
+							<span><html:multibox property="sourcetype" value="${sourceType.sourceTypeID}" />${sourceType.sourceTypeName}</span>
+						</c:forEach>
+					</div>
+				</td>
+            </tr>
+            <tr>
+				<th><a href="#" onclick="popC.showPopup('categoryanchor');return false;"><fmt:message key="sourcecategory.sourcecategories"/></a></th>
+				<td colspan="3">
+					<a name="categoryanchor" id="categoryanchor"> </a>
+					<div id="sourcecategorydesc" style="visibility: hidden">${folderForm.sourceCategoryFilter}</div>
+					<div id="sourcecategories" style="width:15em">
+						<span><html:multibox property="sourcecategory" value="0" />All</span>
+						<c:forEach var="sourceCategory" items="${globals.sourceCategories}">
+							<span><html:multibox property="sourcecategory" value="${sourceCategory.categoryID}" />${sourceCategory.categoryName}</span>
+						</c:forEach>
+					</div>
+				</td>
+            </tr>
+            <tr>
+				<th><fmt:message key="search.search" /></th>
+				<td colspan="2">
+					<html:text styleClass="text" property="search" />
+					<c:if test="${user.archive.enabled}">
+						<html:checkbox property="fullText"/> <fmt:message key="search.fulltext" />&nbsp;
+					</c:if>
+				</td>
+				<td>
+					<html:submit styleClass="button">
+						<fmt:message key="prompt.refresh"/>
+					</html:submit>
+				</td>
+            </tr>
+        </table>
+	</html:form>
+</div>
+<script type="text/javascript">
+	var div = document.getElementById('sourcetypes');
+	div.style.position = 'absolute';
+	div.style.visibility = 'hidden';
+	div.className = 'popup';
+	document.getElementById('sourcetypedesc').style.visibility = 'visible';
+
+	var div = document.getElementById('sourcecategories');
+	div.style.position = 'absolute';
+	div.style.visibility = 'hidden';
+	div.className = 'popup';
+	document.getElementById('sourcecategorydesc').style.visibility = 'visible';
+</script>
+<!-- News Item select form end -->

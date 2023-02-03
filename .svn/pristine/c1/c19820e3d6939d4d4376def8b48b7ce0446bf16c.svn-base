@@ -1,0 +1,188 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="mg" %>
+<html:xhtml/>
+<script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+
+<html:javascript formName="userForm" method="validateUser" cdata="false" staticJavascript="false" />
+
+<div class="info">
+    <mg:adminbar selected="user" loginid="${userForm.loginID}"/>
+	<h2><fmt:message key="title.user"/> -  ${userForm.userName}</h2>
+   	<html:messages name="mediagen.user.messages" id="msg" header="user.messages.header" footer="messages.footer">
+	    <b class="message">${msg}</b>
+    </html:messages>
+    <html:messages name="mediagen.user.errors" id="msg" header="user.errors.header" footer="errors.footer">
+  		<b class="error">${msg}</b>
+   	</html:messages>
+	<script type="text/javascript">var userFormValidate = "mediagen.user."</script>
+	<div class="validate" id="mediagen.user.validate">
+   	</div>
+   	<html:form action="/admin-user" method="post" onsubmit="return validateUser(this);">
+        <c:choose>
+            <c:when test="${user.level ge globals.USER_INTERNAL}">
+        	    <html:hidden property="page" value="2" />
+            </c:when>
+            <c:otherwise>
+        	    <html:hidden property="page" value="1" />
+		    </c:otherwise>
+		</c:choose>
+	    <input type="hidden" name="action" value="update" />
+		<html:hidden property="loginID" />
+   		<table class="form">
+    		<tr>
+    		    <th><fmt:message key="login.loginname" /></th>
+    		    <td>
+    		        <c:choose>
+    		            <c:when test="${user.level eq globals.USER_INTERNAL}">
+    		                <html:text property="loginName"/>
+    		            </c:when>
+    		            <c:otherwise>
+                		    <html:hidden property="loginName"/>${userForm.loginName}
+    		            </c:otherwise>
+    		        </c:choose>
+    		    </td>
+    		</tr>
+            <tr><th></th><td><h3><fmt:message key="login.password.change"/></h3></td></tr>
+            <tr><th><fmt:message key="login.password.new" /></th><td><html:password property="password" size="50" maxlength="50" redisplay="false" /></td></tr>
+   			<tr><th><fmt:message key="login.password.retype" /></th><td><html:password property="retype" size="50" maxlength="50" redisplay="false" /></td></tr>
+    		<tr><th></th><td><h3><fmt:message key="login.personal"/></h3></td></tr>
+    		<tr><th><fmt:message key="login.username" /></th><td><html:text property="userName" size="50" maxlength="100"/></td></tr>
+	    	<tr><th><fmt:message key="login.email" /></th><td><html:text property="email" size="50" maxlength="50"/></td></tr>
+   			<tr><th><fmt:message key="login.fax" /></th><td><html:text property="fax" size="50" maxlength="20"/></td></tr>
+    		<tr><th></th><td><h3><fmt:message key="login.permissions"/></h3></td></tr>
+	        <c:choose>
+	            <c:when test="${user.level ge globals.USER_INTERNAL}">
+	                <tr><th><fmt:message key="login.logins.current"/></th><td><html:text property="curLogins"/></td></tr>
+	                <tr><th><fmt:message key="login.logins.max"/></th><td><html:text property="maxLogins"/></td></tr>
+	            </c:when>
+   	            <c:otherwise>
+   	            	<tr>
+	   	            	<th><fmt:message key="login.logins"/></th>
+   		            	<td>${userForm.maxLogins} (${userForm.curLogins})<html:hidden property="maxLogins" /><html:hidden property="curLogins" /></td>
+		   			</tr>
+			    </c:otherwise>
+			</c:choose>
+   			<tr>
+                <th><fmt:message key="login.level" /></th>
+                <td>
+                   	<c:choose>
+                        <c:when test="${user.loginID eq userForm.loginID}">
+							<html:hidden property="level" />
+							<fmt:message key="${globals.levels[userForm.level]}" /> 
+						</c:when>
+						<c:when test="${user.level eq globals.USER_INTERNAL or (user.level eq globals.USER_ADMIN and userForm.groupID eq user.group.groupID)}">
+	   						<html:select property="level">
+              		            <c:forEach items="${globals.levels}" var="item" varStatus="status">
+									<html:option key="${item}" value="${status.index}" />
+                       		    </c:forEach>
+	 				        </html:select>
+                        </c:when>
+						<c:otherwise>
+							<html:hidden property="level" />
+							<fmt:message key="${globals.levels[userForm.level]}" /> 
+						</c:otherwise>
+					</c:choose>
+                </td>
+            </tr>
+            <c:if test="${user.level eq globals.USER_INTERNAL}">
+                <tr>
+                    <th><fmt:message key="login.services"/></th>
+                    <td>
+                        <c:forEach var="service" varStatus="status" items="${globals.services}">
+                            <html:multibox property="controlArray" value="${service.value}" />${service.label}<br />
+                        </c:forEach>
+                    </td>
+                </tr>
+                <tr>
+                    <th><fmt:message key="login.controls"/></th>
+                    <td>
+                        <c:forEach var="tool" varStatus="status" items="${globals.tools}">
+                            <html:multibox property="controlArray" value="${tool.value}" />${tool.label}<br />
+                        </c:forEach>
+                        <html:checkbox property="attachment"/><fmt:message key="login.attachment"/><br />
+                    </td>
+                </tr>
+        		<tr><th></th><td><h3><fmt:message key="login.settings"/></h3></td></tr>
+                <tr>
+                    <th><fmt:message key="group.groupname"/></th>
+           			<td>
+           				<html:select property="groupID">
+       	    				<c:set var="groups" value="${globals.groups}"/>
+       		    			<html:options collection="groups" labelProperty="groupName" property="groupID"/>
+                        </html:select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><fmt:message key="style.stylename"/></th>
+                    <td>
+           				<html:select property="styleID">
+       	    				<c:set var="styles" value="${globals.styles}"/>
+       		    			<html:options collection="styles" labelProperty="styleName" property="styleID"/>
+                        </html:select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><fmt:message key="login.timeout"/></th>
+                    <td><html:text property="timeout"/></td>
+                </tr>
+        		<tr><th></th><td><h3><fmt:message key="login.eclips"/></h3></td></tr>
+                <tr>
+                    <th><fmt:message key="login.nlauserid"/></th>
+                    <td><html:text property="nlaUserID"/></td>
+                </tr>
+                <tr>
+                    <th><fmt:message key="login.nlapassword"/></th>
+                    <td><html:text property="nlaPassword"/></td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <td><html:checkbox property="restrictNI"/><fmt:message key="login.restrictni"/></td>
+                </tr>
+               	<script type="text/javascript" src='<html:rewrite href="script?resource=dynamicoptionlist.js"/>'></script>
+            	<script type="text/javascript">
+            		var sections = new DynamicOptionList("defaultSection","defaultBrief");
+            		sections.addOptions("0", "<fmt:message key="sortsection.nosortsection"/>", "0");
+            		<c:forEach var="brief" items="${userForm.briefList}">
+            			sections.addOptions("${brief.briefID}", "<fmt:message key="sortsection.nosortsection"/>", "0");
+            			<c:forEach var="section" items="${brief.sortSections}">
+            				sections.addOptions("${brief.briefID}", "${section.sortSectionName}", "${section.sortSectionID}");
+            				sections.addOptions("0", "${brief.briefName}: ${section.sortSectionName}", "${section.sortSectionID}");
+            			</c:forEach>
+            		</c:forEach>
+            		sections.setDefaultOption("0","0");
+            		sections.init("userForm");
+            	</script>
+        		<tr><th></th><td><h3><fmt:message key="login.press"/></h3></td></tr>
+                <tr>
+   			    <tr>
+   			        <th><fmt:message key="brief.brief" /></th>
+   			        <td>
+      					<html:select onchange="sectors.populate();" property="defaultBrief">
+        	  			    <option value="0"><fmt:message key="brief.nobrief"/></option>
+			                <html:optionsCollection name="userForm" property="briefList" label="briefName" value="briefID" />
+       					</html:select>
+            		</td>
+                </tr>
+                <tr>
+        	    	<th><fmt:message key="section.section" /></th>
+                	<td>
+                		<html:select property="defaultSection">
+            	    		<script language="javascript">sections.printOptions();</script>
+	            	    	<option value="0"><fmt:message key="sortsection.nosortsection"/></option>
+    					       	<c:forEach var="brief" items="${userForm.briefList}">
+            	    				<html:optionsCollection name="brief" property="sortSections" label="sortSectionName" value="sortSectionID" />
+		                		</c:forEach>
+			    		</html:select>
+			    	</td>
+			    </tr>
+            </c:if>
+            <tr><th>&nbsp;</th><td><html:submit><fmt:message key="prompt.update"/></html:submit></td></tr>
+	    </table>
+	</html:form>
+    <script  type="text/javascript">
+        sectors.populate();
+    </script>
+</div>		

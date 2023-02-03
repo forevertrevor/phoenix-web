@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE form-validation PUBLIC "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.0//EN" "http://jakarta.apache.org/commons/dtds/validator_1_0.dtd">
+<form-validation>
+	<formset>
+		<form name="/admin-list">
+			<field property="search" depends="required">
+				<arg0 key="prompt.filter"/>
+			</field>
+			<field property="action" depends="required">
+				<arg0 key="prompt.show"/>
+			</field>
+		</form>
+	
+		<form name="alertForm">
+			<field property="email" depends="email">
+				<arg0 key="prompt.email"/>
+			</field>
+			<field property="template" depends="required,mask">
+				<arg0 key="prompt.template"/>
+				<msg name="mask" key="errors.mask.xsl"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^.*\.xsl$</var-value>
+				</var>
+			</field>
+			<field property="lastSent" depends="datetime">
+				<arg0 key="prompt.lastsent"/>
+				<arg1 key="prompt.datetimeformat"/>
+				<var>
+					<var-name>datePatternStrict</var-name>
+					<var-value>dd-MMM-yyyy HH:mm:ss</var-value>
+				</var>
+			</field>
+			<field property="hour" depends="range">
+				<arg0 key="prompt.hour"/>
+				<arg1 name="range" key="${var:min}" resource="false"/>
+				<arg2 name="range" key="${var:max}" resource="false"/>
+				<var>
+					<var-name>min</var-name>
+					<var-value>0</var-value>
+				</var>
+				<var>
+					<var-name>max</var-name>
+					<var-value>23</var-value>
+				</var>
+			</field>
+			<field property="minute" depends="range">
+				<arg0 key="prompt.minute"/>
+				<arg1 name="range" key="${var:min}" resource="false"/>
+				<arg2 name="range" key="${var:max}" resource="false"/>
+				<var>
+					<var-name>min</var-name>
+					<var-value>0</var-value>
+				</var>
+				<var>
+					<var-name>max</var-name>
+					<var-value>59</var-value>
+				</var>
+			</field>
+		</form>
+
+        <form name="groupForm">
+            <field property="groupName" depends="required">
+                <arg0 key="prompt.groupname"/>
+            </field>
+            <field property="clientID" depends="required">
+            	<arg0 key="prompt.clientid"/>
+            </field>
+        </form>
+        
+        <form name="styleForm">
+        	<field property="styleName" depends="required">
+				<arg0 key="prompt.stylename"/>
+        	</field>
+			<field property="folder" depends="required,mask">
+				<arg0 key="prompt.folder"/>
+				<msg name="mask" key="errors.mask.folder"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^.*\/$</var-value>
+				</var>
+			</field>
+			<field property="css" depends="required,mask">
+				<arg0 key="prompt.css"/>
+				<msg name="mask" key="errors.mask.css"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^.*\.css$</var-value>
+				</var>
+			</field>
+			<field property="home" depends="required">
+				<arg0 key="prompt.homepage"/>
+			</field>
+			<field property="news" depends="required">
+				<arg0 key="prompt.newspage"/>
+			</field>
+			<field property="evaluation" depends="required">
+				<arg0 key="prompt.evalpage"/>
+			</field>
+			<field property="archive" depends="required">
+				<arg0 key="prompt.archivepage"/>
+			</field>
+			<field property="emailSummary" depends="required,mask">
+				<arg0 key="prompt.emailsummary.template"/>
+				<msg name="mask" key="errors.mask.xsl"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^.*\.xsl$</var-value>
+				</var>
+			</field>
+			<field property="emailArticle" depends="required,mask">
+				<arg0 key="prompt.emailarticle.template"/>
+				<msg name="mask" key="errors.mask.xsl"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^.*\.xsl$</var-value>
+				</var>
+			</field>
+			<field property="printSummary" depends="required,mask">
+				<arg0 key="prompt.printsummary.template"/>
+				<msg name="mask" key="errors.mask.xsl"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^.*\.xsl$</var-value>
+				</var>
+			</field>
+       	</form>
+        
+        <form name="archForm">
+			<field property="created" depends="required,datetime">
+				<arg0 key="prompt.created"/>
+				<arg1 key="prompt.datetimeformat"/>
+				<var>
+					<var-name>datePatternStrict</var-name>
+					<var-value>dd-MMM-yyyy HH:mm:ss</var-value>
+				</var>
+			</field>
+
+			<field property="lastSent" depends="required,datetime">
+				<arg0 key="prompt.lastsent"/>
+				<arg1 key="prompt.datetimeformat"/>
+				<var>
+					<var-name>datePatternStrict</var-name>
+					<var-value>dd-MMM-yyyy HH:mm:ss</var-value>
+				</var>
+			</field>
+        </form>
+        
+		<form name="userForm">
+			<field property="loginName" depends="required" page="1">
+				<arg0 key="prompt.loginname"/>
+			</field>
+			<field property="userName" depends="required" page="1">
+				<arg0 key="prompt.username"/>
+			</field>
+			<field property="email" depends="email" page="1">
+				<arg0 key="prompt.email"/>
+			</field>
+			<field property="fax" depends="mask" page="1">
+				<arg0 key="prompt.fax"/>
+				<msg name="mask" key="errors.mask.fax"/>
+				<var>
+					<var-name>mask</var-name>
+					<var-value>^[0-9]([0-9]|\s)*$</var-value>
+				</var>
+			</field>
+			<field property="curLogins" depends="required,long" page="2">
+				<arg0 key="prompt.curlogins"/>
+			</field>
+			<field property="maxLogins" depends="required,long" page="2">
+				<arg0 key="prompt.maxlogins"/>
+			</field>
+			<field property="level" depends="intRange" page="2">
+				<arg0 key="prompt.level"/>
+				<arg1 name="intRange" key="level.readonly"/>
+		        <arg2 name="intRange" key="level.internal"/>
+		        <var>
+					<var-name>min</var-name>
+					<var-value>0</var-value>
+				</var>
+				<var>
+					<var-name>max</var-name>
+					<var-value>5</var-value>
+				</var>
+			</field>
+			<field property="nlaUserID" depends="long" page="2">
+				<arg0 key="prompt.nlaid"/>
+			</field>
+			<field property="groupID" depends="required,long" page="2">
+				<arg0 key="prompt.groupname"/>
+			</field>
+			<field property="styleID" depends="required,long" page="2">
+				<arg0 key="prompt.stylename"/>
+			</field>
+			<field property="password" depends="requiredif,retype" page="1">
+				<arg0 key="prompt.password"/>
+				<var>
+					<var-name>field[0]</var-name>
+					<var-value>retype</var-value>
+				</var>
+				<var>
+					<var-name>fieldTest[0]</var-name>
+					<var-value>NOTNULL</var-value>
+				</var>
+				<var>
+					<var-name>retype</var-name>
+					<var-value>retype</var-value>
+				</var>
+			</field>
+			<field property="retype" depends="requiredif" page="1">
+				<arg0 key="prompt.retypepassword"/>
+				<var>
+					<var-name>field[0]</var-name>
+					<var-value>password</var-value>
+				</var>
+				<var>
+					<var-name>fieldTest[0]</var-name>
+					<var-value>NOTNULL</var-value>
+				</var>
+			</field>
+		</form>
+    </formset>
+    
+</form-validation>

@@ -1,0 +1,62 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<!-- taglib uri="/WEB-INF/tags/user-agent.tld" prefix="ua" -->
+
+<html>
+<head>
+	<title><fmt:message key="title.print.article"/></title>
+	<link rel="stylesheet" type="text/css" href='<html:rewrite href="/action/style?property=css"/>' />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="refresh" content="10" />
+</head>
+<body>
+    <div class="internal display plain">
+        <h3><fmt:message key="prompt.please.wait"/> (${printcount})</h3>
+        <h5><fmt:message key="print.articles.compiling"/></h5>
+
+        <html:messages name="mediagen.tool.errors" id="msg" header="tool.errors.header" footer="errors.footer">
+	        <b class="error">${msg}</b>
+        </html:messages>
+
+		<c:choose>
+			<c:when test="${!user.attachment}">
+				<h5><fmt:message key="print.articles.browser"/></h5>
+			</c:when>
+			<c:otherwise>
+    		    <h5><fmt:message key="print.articles.acrobat"/></h5>
+				<!-- <ua:switch>
+					<ua:case agent="MSIE">
+						<h1>Internet Explorer</h1>
+		                <html:img src="image?resource=ie_download.png" alt="Download File dialog box for Internet Explorer" title="Download File Confirm" />
+        		        <h5><fmt:message key="print.articles.open"/></h5>
+		        		<h5><fmt:message key="print.articles.progress"/></h5>
+		                <html:img src="image?resource=ie_progress.png" alt="Download Progress box for Internet Explorer" title="Download File Progress" />                    
+				        <h5><fmt:message key="print.articles.print"/></h5>
+				        <h5><fmt:message key="print.articles.close"/></h5>
+					</ua:case>
+					<ua:case agent="Firefox">
+                		<h1>Firefox</h1>
+		                <html:img src="image?resource=ff_download.png" alt="Download File dialog box for Firefox" title="Download File Confirm" />                    
+        		        <h5><fmt:message key="print.articles.open.ff"/></h5>
+		        		<h5><fmt:message key="print.articles.progress"/></h5>
+		                <html:img src="image?resource=ff_progress.png" alt="Download Progress box for Firefox" title="Download File Progress" />                    
+				        <h5><fmt:message key="print.articles.print"/></h5>
+				        <h5><fmt:message key="print.articles.close"/></h5>
+					</ua:case>
+					<ua:case agent="Opera">
+						<h1>Opera</h1>
+		                <html:img src="image?resource=op_download.png" alt="Download File dialog box for Opera" title="Download File Confirm" />
+        		        <h5><fmt:message key="print.articles.open"/></h5>
+		        		<h5><fmt:message key="print.articles.progress"/></h5>
+		                <html:img src="image?resource=op_progress.png" alt="Download Progress box for Opera" title="Download File Progress" />                    
+				        <h5><fmt:message key="print.articles.print.op"/></h5>
+					</ua:case>
+				</ua:switch>-->
+			</c:otherwise>
+		</c:choose>
+    </div>
+</body>
+</html>
+
+

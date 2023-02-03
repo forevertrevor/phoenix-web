@@ -1,0 +1,163 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-bean" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tags/logic.tld" prefix="lg"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="mg" %>
+
+<html:xhtml/>
+<div class="display info">
+	<script language="javascript" src="<html:rewrite href="script?resource=validate.js"/>" type="text/javascript"></script>
+	<html:javascript formName="alertForm" method="validateAlert" cdata="false" staticJavascript="false" />
+    <mg:adminbar selected="alert" loginid="${alertForm.alertID}"/>
+   	<h2><fmt:message key="title.alert"/> - ${alertForm.user.userName}</h2>
+   	<html:messages name="mediagen.alert.messages" id="msg" header="alert.messages.header" footer="messages.footer">
+	    <b class="message">${msg}</b>
+    </html:messages>
+    <html:messages name="mediagen.alert.errors" id="msg" header="alert.errors.header" footer="errors.footer">
+  		<b class="error">${msg}</b>
+   	</html:messages>
+	<script type="text/javascript">var alertFormValidate = "mediagen.alert."</script>
+	<div class="validate" id="mediagen.alert.validate">
+   	</div>
+    <html:form action="/admin-alert" method="post">
+    	<html:hidden property="action" value="update"/>
+       	<html:hidden property="alertID" />
+        <html:checkbox property="enabled" /> <fmt:message key="alert.send" /><br /><br />
+        <html:checkbox property="enabled" /> <fmt:message key="alert.rss" /><br /><br />
+        <fmt:message key="alert.format" />&nbsp;<html:radio property="html" value="false" />&nbsp;<fmt:message key="alert.plain"/>&nbsp;|&nbsp;&nbsp;<html:radio property="html" value="true" />&nbsp;<fmt:message key="alert.html"/><br />
+        <c:choose>
+            <c:when test="${user.level eq globals.USER_INTERNAL}">
+                <p><fmt:message key="alert.template"/> <html:text property="template" size="20"/></p>
+            </c:when>
+            <c:otherwise>
+       			<html:hidden property="template"/>
+            </c:otherwise>
+        </c:choose>
+        <html:submit><fmt:message key="prompt.update"/></html:submit>
+
+        <h2><a name="times"><fmt:message key="alert.times" /></a></h2>
+    	<p><fmt:message key="alert.times.instr" /></p>
+        <c:choose>
+            <c:when test="${user.level eq globals.USER_INTERNAL}">
+                <p><fmt:message key="alert.lastsent"/> <html:text property="lastSent" size="20"/></p>
+            </c:when>
+            <c:otherwise>
+       			<p><fmt:message key="alert.lastsent"/> <c:choose><c:when test="${empty alert.lastSent}">n/a</c:when><c:otherwise>${alert.lastSent}</c:otherwise></c:choose></p>
+            </c:otherwise>
+        </c:choose>
+		<table>
+			<thead>
+				<tr><th><fmt:message key="prompt.time" /></th><th><fmt:message key="prompt.delete"/></th></tr>
+			</thead>
+			<tbody>
+                <tr><td colspan="2"><html:radio property="uploadTime" value="true" />&nbsp;<fmt:message key="alert.times.uploaded"/></td></tr>
+       			<tr><td colspan="2"><html:radio property="uploadTime" value="false" />&nbsp;<fmt:message key="alert.times.selected"/></td></tr>
+   				<c:forEach var="time" items="${alertForm.user.alert.times}">
+					<tr><td>${time}</td><td><html:checkbox property="deleteTime" value="${time}" /></td></tr>
+				</c:forEach>
+       			<tr><td colspan="2"><html:checkbox property="noContent"/>&nbsp;<fmt:message key="alert.times.nocontent"/></td></tr>
+    		    <tr>
+    				<td>
+   						<html:select property="hour">
+   							<option value="">--</option>
+							<c:forEach begin="0" end="23" var="hr"><html:option value="${hr}"><fmt:formatNumber value="${hr}" pattern="00"/></html:option></c:forEach>
+						</html:select>
+   	            		<html:select property="minute">
+							<option value="">--</option>
+							<c:forEach begin="0" end="59" step="10" var="mn"><html:option value="${mn}"><fmt:formatNumber value="${mn}" pattern="00"/></html:option></c:forEach>
+						</html:select>
+					</td>
+					<td><html:submit><fmt:message key="prompt.update"/></html:submit></td>
+				</tr>
+    		</tbody>
+        </table>
+		<h2><a name="sectors"><fmt:message key="alert.contents" /></a></h2>
+		<p><fmt:message key="alert.contents.instr" /></p>
+		<table>
+			<thead>
+				<tr><th><fmt:message key="brief.brief" /></th><th><fmt:message key="section.section" /></th><th colspan="3"><fmt:message key="prompt.include" /></th></tr>
+			</thead>
+			<tbody>
+				<tr class="first"><td><fmt:message key="brief.allbriefs" /></td><td>&nbsp;</td><td><html:checkbox property="all"/></td></tr>
+				<c:forEach var="brief" items="${alertForm.user.briefAccess}">
+                    <c:set var="briefsel" value="false"/>
+                    <c:set var="secsel" value="false"/>
+                    <c:if test="${lg:arrayIncludes(alertForm.brief, brief.briefID)}">
+                        <c:set var="briefsel" value="true"/>
+                    </c:if>
+                    <c:forEach var="sec" items="${brief.sortSections}">
+                        <c:if test="${lg:arrayIncludes(alertForm.section, sec.sortSectionID)}">
+                            <c:set var="secsel" value="true"/>
+                        </c:if>
+                    </c:forEach>
+                    <c:if test="${secsel or briefsel or brief.active}">
+                        <c:choose>
+                            <c:when test="${brief.active}">
+            					<tr class="second"><td>${brief.briefName}</td><td>&nbsp;</td><td>&nbsp;</td><td><html:multibox property="brief" value="${brief.briefID}"/></td></tr>
+                            </c:when>
+                            <c:otherwise>
+            					<tr class="seconddisabled"><td>${brief.briefName}</td><td>&nbsp;</td><td>&nbsp;</td><td><html:multibox property="brief" value="${brief.briefID}"/></td></tr>
+                            </c:otherwise>
+                        </c:choose>
+    					<c:forEach var="sec" items="${brief.sortSections}">
+                        <c:choose>
+                            <c:when test="${brief.active}">
+    	    					<tr class="third"><td>&nbsp;</td><td>${sec.sortSectionName}</td><td>&nbsp;</td><td>&nbsp;</td><td><html:multibox property="section" value="${sec.sortSectionID}"/></td></tr>
+                            </c:when>
+                            <c:otherwise>
+    	    					<tr class="thirddisabled"><td>&nbsp;</td><td>${sec.sortSectionName}</td><td>&nbsp;</td><td>&nbsp;</td><td><html:multibox property="section" value="${sec.sortSectionID}"/></td></tr>
+                            </c:otherwise>
+                        </c:choose>
+		    			</c:forEach>
+	    			</c:if>
+				</c:forEach>
+   	            <tr><td>&nbsp;</td><td>&nbsp;</td><td colspan="3"><html:submit><fmt:message key="prompt.update"/></html:submit></td>
+			</tbody>
+		</table>
+		<h2><a name="sourcetypes"><fmt:message key="alert.sourcetypes"/></a></h2>
+		<p><fmt:message key="alert.sourcetypes.instr" /></p>
+		<table>
+			<thead>
+				<tr>
+					<th><fmt:message key="sourcetype.sourcetype"/></th>
+					<th><fmt:message key="publicationtype.publicationtype"/></th>
+					<th colspan="3"><fmt:message key="prompt.include" /></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="first"><td><fmt:message key="sourcetype.allsourcetypes" /></td><td>&nbsp;</td><td><html:checkbox property="allSources"/></td></tr>
+				<c:forEach var="sourceType" items="${globals.sourceTypes}">
+					<tr class="second"><td>${sourceType.sourceTypeName}</td><td>&nbsp;</td><td>&nbsp;</td><td><html:multibox property="sourceType" value="${sourceType.sourceTypeID}"/></td></tr>
+					<c:if test="${sourceType.sourceTypeName eq 'Publication'}">
+						<c:forEach var="sourceCategory" items="${globals.sourceCategories}">
+							<tr class="third"><td></td><td>${sourceCategory.categoryName}</td><td>&nbsp;</td><td>&nbsp;</td><td><html:multibox property="sourceCategories" value="${sourceCategory.categoryID}"/></td></tr>
+						</c:forEach>
+					</c:if>
+				</c:forEach>
+   	            <tr><td>&nbsp;</td><td>&nbsp;</td><td colspan="3"><html:submit><fmt:message key="prompt.update"/></html:submit></td>
+			</tbody>
+		</table>
+		<h2><a name="users"><fmt:message key="alert.recipients"/></a></h2>
+		<p><fmt:message key="alert.recipients.instr"/></p>
+		<table>
+			<thead>
+				<tr>
+					<th><fmt:message key="prompt.email"/></th>
+					<th><fmt:message key="prompt.delete"/></th>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="email" items="${alertForm.user.alert.emails}">
+		            <tr>
+						<td>${email}</td>
+   		    		    <td><html:checkbox property="deleteEmail" value="${email}"/></td>
+	    			</tr>
+				</c:forEach>
+       		    <tr><td><html:text property="email" /></td><td><html:submit><fmt:message key="prompt.update"/></html:submit></td>
+			</tbody>
+	    </table>
+   	</html:form>
+</div>
+

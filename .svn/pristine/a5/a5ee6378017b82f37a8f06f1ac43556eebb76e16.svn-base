@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+	<!-- Templates to output Share prices in an alert -->
+	<!-- 
+	Usage:
+		a. within <head>
+		<head>
+			...
+			<xsl:call-template name="shares-style"/>
+			...
+		</head>
+	
+		b. within <body>
+		<body>
+			...
+			<xsl:apply-templates select="shares"/>
+			...
+		</body>
+		
+		
+	 -->
+
+	<xsl:template name="shares-style">
+				<style>
+					table.shares {font-size: x-small; font-weight: bold; }
+					table.shares th { background-color: #c0c0c0;}
+					table.shares td.gain { color: #009900; text-align: right; }
+					table.shares td.none { color: #000000; text-align: right; }
+					table.shares td.loss { color: #bb0000; text-align: right; }
+					table.shares td.price { text-align: right; }
+					table.shares td, table.shares tr { padding-left: 5pt; padding-right: 5pt; }
+				</style>
+	</xsl:template>
+
+    <xsl:template match="shares">
+		<table class="shares">
+			<tr><th>Company</th><th>Price</th><th>Day Change</th><th>Percentage Change</th></tr>
+			<xsl:apply-templates select="share"/>
+		</table>
+    </xsl:template>
+	
+	<xsl:template match="share">
+		<tr>
+			<td><xsl:value-of select="@name"/></td>
+			<td class="price"><xsl:value-of select="@prefix"/><xsl:value-of select="format-number(close, '#,##0.00')"/><xsl:value-of select="@suffix"/></td>
+			<xsl:element name="td">
+				<xsl:attribute name="class"><xsl:call-template name="change-class"/></xsl:attribute>
+				<xsl:value-of select="@prefix"/><xsl:value-of select="format-number(change,'+#,##0.00;-#,##0.00')"/><xsl:value-of select="@suffix"/>
+			</xsl:element>
+			<xsl:element name="td">
+				<xsl:attribute name="class"><xsl:call-template name="change-class"/></xsl:attribute>
+				<xsl:value-of select="format-number(percent,'+#,##0.00;-#,##0.00')"/>%
+			</xsl:element>
+		</tr>
+	</xsl:template>
+
+	<xsl:template name="change-class">
+		<xsl:choose>
+			<xsl:when test="change='n/a'">none</xsl:when>
+			<xsl:when test="change &gt; 0">gain</xsl:when>
+			<xsl:when test="change &lt; 0">loss</xsl:when>
+			<xsl:otherwise>none</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+</xsl:stylesheet>

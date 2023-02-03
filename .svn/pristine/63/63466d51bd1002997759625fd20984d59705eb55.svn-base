@@ -1,0 +1,574 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ page contentType="text/css" %>
+
+
+body {
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	/*background-image: url(<html:rewrite href="image?resource=page_background.gif"/>);*/
+	background-color: #A8A8E6; /* #D7EFFF;*/
+	color: #666666;
+    font-size: small;
+}
+
+body.plain {
+	background-image: none;
+	background-color: #ffffff;
+}
+
+div.internal {
+    width: 90%;
+    background-color: #ffffff;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #0000ff;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div.plain {
+    padding: 1em;
+}
+
+/* For displaying error and info messages */
+div.errors {
+    border: 1px solid #ff0000;
+    background-color: #ffdfde;
+    padding: 2px;
+    margin: 2px;
+}
+div.validate {
+    border: 1px solid #ff0000;
+    background-color: #ffdfde;
+    display: none;
+    padding: 2px;
+    margin: 2px;
+}
+div.messages {
+    border: 1px solid #a5ce4a;
+    background-color: #fbfbe1;
+    padding: 2px;
+    margin: 2px;
+}
+div.errors b, div.messages b, div.validate b {
+    font-weight: normal;
+    color: black;
+	display: list-item;
+	list-style-type: none;
+}
+
+div.menubar {
+    /*background-image: url(<html:rewrite href="image?resource=menu_background.gif"/>);*/
+    background-color: #34488D; /*#a6cf4b;*/
+	color: #ffffff;
+    padding: .5em;
+}
+
+div.menubar h1 {
+	color: #ffffff;
+}
+
+div.footer {
+    clear: both;
+    text-align: center;
+    font-size: x-small;
+    padding-top: 2em;
+    padding-bottom: 2em;
+    margin-top: 1em;
+}
+
+div.menubar span {
+    padding: .5em 1em .5em 1em;
+    font-weight: bold;
+	color: #ffffff;
+}
+
+div.menubar span.selected a {
+	border-top: 2px solid #C6DDE5;
+	border-bottom: 2px solid #C6DDE5;
+	border-left: 5px solid #C6DDE5;
+	border-right: 5px solid #C6DDE5;
+	background-color: #C6DDE5;
+	color: #000000;
+}
+
+div.menubar span.item {
+	padding: .5em .25em .5em .25em;
+}
+div.menubar span.section {
+	margin-left: .5em;
+	padding: .5em 0em .5em .5em;
+	border-left: 1px solid #ffffff;
+}
+div.menubar span.divider {
+	padding: .5em 0em .5em .25em;
+	background-color: #ffffff;
+}
+div.menubar a {
+    text-decoration: none;
+    /*color: inherit;  //IE6 does not support color: inherit */
+    color: #ffffff;
+}
+
+div.groupmessage {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+th {
+    text-align: right;
+    vertical-align: top;
+}
+
+td {
+    vertical-align: top;
+}
+
+li {
+    list-style-image: url(<html:rewrite href="image?resource=list_dot.gif"/>);
+    margin-top: .5em;
+}
+
+div.info {
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+
+.row div {
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+
+/* One column layout */
+/* Column One */
+.one-col div.col-one {
+    float: none;
+    width: 100%;
+}
+
+/* Two column layout */
+/* Column One */ 
+.two-col div.col-one { 
+    margin-top: 1%;
+    float: left;
+    width: 48%; 
+}
+/* Column Two */
+.two-col div.col-two { 
+    float: left;
+    width: 48%; 
+    margin-top: 1%;
+    margin-left: 1%;
+}
+
+/* Three column layout */
+/* Column One */
+.three-col div.col-one { 
+    margin-top: 1%;
+    float: left; 
+    width: 32%; 
+}
+/* Column Two */
+.three-col div.col-two { 
+    float: left;
+    margin-left: 1%;
+    margin-top: 1%;
+    width: 32%; 
+}
+/* Column Three */
+.three-col div.col-three { 
+    float: left; 
+    margin-left: 1%;
+    margin-top: 1%;
+    width: 32%;
+}
+
+h1 {
+	font-size: 18px;
+	font-weight: bold;
+	color: #34488D;
+}
+h2 {
+	font-size: 16px;
+	font-weight: bold;
+	color: #34488D;
+}
+h3 {
+	font-size: 14px;
+	font-weight: bold;
+	color: #34488D;
+}
+h4 {
+	font-size: 12px;
+	font-weight: bold;
+	color: #34488D;
+}
+
+img.right {
+    float: right;
+    margin-left: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+img.icon {
+    vertical-align: middle;
+}
+
+.box {
+    /*background-image: url(<html:rewrite href="image?resource=menu_background.gif"/>);*/
+    background-color: #a6cf4b;
+    border-style: solid;
+    border-color: #666666;
+    border-width: 1px;
+}
+
+div.box {
+    padding: 1em;
+}
+.box a {
+    text-decoration: none;
+    color: #000000;
+}
+
+/* For displaying "tooltip" style messages when hovering over an element */
+div.tooltip {
+	position: absolute;
+	color: black;
+	background-color: #ffffe1;
+	visibility: hidden;
+	z-index: 10;
+	font-size: x-small;
+	white-space: nowrap;
+	padding: 2px;
+	border: 1px solid black;
+}
+
+div.groupmessage {
+	clear: both;
+}
+
+div.clientlogo {
+	float: left;
+	height: 160px;
+	width: 200px;
+	overflow: visible;
+}
+
+div.newsform {
+	margin: 2px 2px 2px 330px;
+	clear: right;
+	min-height: 120px;
+	height: 120px;
+}
+
+div[class] div.newsform {
+	height: auto;
+}
+
+div.summary {
+	margin: 0% 20%;
+}
+
+div.buttons {
+	margin: 2px 2px 2px 200px;
+    clear: right;
+}
+
+form {
+    display: inline;
+	margin: 0;
+	border: 0;
+	padding: 0;
+}
+
+a.nolink {
+	text-decoration: none;
+	color: black;
+}
+
+input.disabled {
+	background-color: silver;
+}
+select.disabled {
+	background-color: silver;
+}
+
+b.error {
+    font-weight: bold;
+    color: red;
+}
+
+b.message {
+    font-weight: bold;
+    color: #00a038;
+}
+
+table.form th {
+	text-align: right;
+	padding-right: 5px;
+}
+
+.right {
+	text-align: right;
+}
+
+.centre {
+    text-align: center;
+}
+
+/* Displaytag Styles */
+
+div.display a, th, td {
+	margin:0;
+	padding:0;
+	font-size: 1em;
+	background-repeat:no-repeat;
+	list-style-type:none;
+}
+
+div.display table {
+	border: 1px solid #34488D;
+	background-color: #ffffff;
+	margin: 5px 0 5px 0;
+	padding: 1px;
+	empty-cells: show;
+}
+
+td.divider {
+	padding: 0px;
+	background-image: url(<html:rewrite href="image?resource=table_separator.gif"/>);
+	background-repeat: repeat-x;
+}
+
+div.display th.sectionhead {
+    font-size: large;
+    text-align: center;
+    background-color: #34488D;
+	color: #ffffff;
+}
+
+div.display td.numeric {
+    text-align: right;
+}
+
+div.display th, div.display td {
+	padding: 2px 4px 2px 4px;
+	text-align: left;
+	vertical-align: top;
+}
+
+div.display thead tr {
+    background-color: #34488D;
+	color: #ffffff;
+}
+
+div.display th.sorted {
+    background-color: #2525ff;
+}
+div.display th a, div.display th a:visited {
+    color: #ffffff;
+    background-repeat: no-repeat;
+}
+div.display th a:hover {
+  text-decoration: underline;
+  color: #ffffff;
+}
+div.display th.sorted a, div.display th.sortable a {
+	background-position: right;
+    background-repeat: no-repeat;
+	display: block;
+}
+div.display th.sortable a {
+	background-image: url(<html:rewrite href="image?resource=arrow_off.png"/>);
+	background-position: right;
+    background-repeat: no-repeat;
+	padding-right: 10px;
+	display: block;
+}
+div.display th.order1 a {
+	background-image: url(<html:rewrite href="image?resource=arrow_down.png"/>);
+	background-position: right;
+    background-repeat: no-repeat;
+	display: block;
+}
+div.display th.order2 a {
+	background-image: url(<html:rewrite href="image?resource=arrow_up.png"/>);
+	background-position: right;
+    background-repeat: no-repeat;
+	display: block;
+}
+div.display tr.odd {
+    background-color: #E6FDFF;
+}
+div.display tr.tableRowEven, div.display tr.even {
+    background-color: #f7f7ff;
+}
+
+div.display tr.first {
+    background-color: #eff7c6;
+}
+
+div.display tr.firstdisabled {
+    background-color: #f7c6c6;
+}
+
+div.display tr.second {
+    background-color: #fbfbe1;
+}
+
+div.display tr.seconddisabled {
+    background-color: #fbe1e1;
+}
+
+div.display tr.third {
+    background-color: #f7fff7;
+}
+
+div.display tr.thirddisabled {
+    background-color: #fff7f7;
+}
+
+a img {
+    border-style: none;
+}
+
+div.exportlinks {
+    background-color: #fbfbe1;
+    margin-top: 3px;
+    margin-bottom: 10px;
+    padding: 3px;
+    border-bottom: 1px solid #b5d663;
+}
+
+table#hss b {
+	color: #ffffff;
+	background-color: #34488D;
+}
+/* End of Displaytag Styles */
+
+/* Styles for the Pop-up Calendar control */
+div.calendar, div.popup {
+	font-family: "Trebuchet MS", serif; 
+	background-color: #C6DDE5;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #34488D;
+}
+
+div.popup span {
+	display: block;
+}
+
+table.header {
+	background-color: #C6DDE5;
+	width: 100%;
+}
+
+table.header tr {
+	background-color: #C6DDE5;
+	line-height: 1em;
+	height: 1.5em;
+}
+
+table.header tr img {
+	vertical-align: middle;
+}
+
+span.control, span.controlHover {
+	cursor: pointer;
+	margin: 0px 3px;
+}
+
+#spanMonth, #spanYear {
+	padding-left: 2px;
+	background-color: #C6DDE5;
+	vertical-align: middle;
+}
+
+table.month, table.year {
+	font-size: x-small; 
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: #34488D;
+	background-color: #C6DDE5;
+	cursor: pointer;
+}
+
+table.year {
+	text-align: center;
+}
+
+td.monthHover, td.yearHover {
+	background-color: #b5d663;
+}
+
+table.calendar {
+	font-family: "Trebuchet MS", serif;
+	font-size: x-small;
+	width: 100%;
+	text-align: right;
+}
+
+th.divider {
+	border-right: 1px solid #34488D;
+}
+
+a.date {
+	text-decoration: none;
+	color: #000000;
+}
+
+a.selected {
+	background-color: #34488D;
+	color: #ffffff !important;
+	padding: 0px 2px;
+}
+
+a.holiday {
+	color: #6e8e16;
+}
+
+a.weekend {
+	color: #34488D;
+}
+a.today {
+	font-weight: bold;
+	color: #34488D;
+}
+
+td.today {
+	background-color: #C6DDE5;
+	text-align: center;
+	padding: 5px;
+	color: #000000;
+}
+
+td.today a {
+	text-decoration: none;
+	color: #000000;
+}
+/* End of Calendar Styles */
+
+/* Print Stylesheet */
+@media print {
+    div.menubar, div.toolbar, span.pagelinks {
+        display: none !important;
+    }
+    
+    div.internal {
+        width: auto !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        border-style: none;
+    }
+    
+    div.display table {
+        border-style: none;
+    }
+    
+    input {
+        display: none !important;
+    }
+}

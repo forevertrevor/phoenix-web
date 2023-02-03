@@ -1,0 +1,8 @@
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+
+<!-- Footer start -->
+<div class="menubar centre">
+	<span><html:link page="/action/welcome?page=about">xymedia</html:link></span>
+</div>
+<!-- Footer end -->
+

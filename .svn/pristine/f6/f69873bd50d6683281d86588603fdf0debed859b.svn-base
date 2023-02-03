@@ -1,0 +1,70 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tags/logic.tld" prefix="lg"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="mg" %>
+<html:xhtml/>
+<div class="info">
+    <mg:adminbar selected="press" loginid="${userForm.loginID}"/>
+	<h2><fmt:message key="title.briefaccess"/> - ${userForm.userName}</h2>
+    <html:messages name="mediagen.user.messages" id="msg" header="user.messages.header" footer="messages.footer">
+	    <b class="message">${msg}</b>
+    </html:messages>
+	<html:messages name="mediagen.user.errors" id="msg" header="user.errors.header" footer="errors.footer">
+		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var userFormValidate = "mediagen.user."</script>
+    <div class="validate" id="mediagen.user.validate">
+	</div>
+   	<html:form action="/admin-user-press" method="post">
+	    <input type="hidden" name="action" value="briefs" />
+		<html:hidden property="loginID" />
+        <div class="display">
+            <table>
+                <thead>
+                    <tr><th><fmt:message key="client.client"/></th><th><fmt:message key="brief.brief"/></th><th colspan="2"><fmt:message key="prompt.include"/></th></tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="client" items="${globals.clients}">
+                        <c:set var="nobriefs" value="true"/>
+                        <c:set var="briefsel" value="false"/>
+                        <c:set var="clientsel" value="false"/>
+                            <c:if test="${lg:arrayIncludes(userForm.client, client.clientID)}">
+                                <c:set var="clientsel" value="true"/>
+                            </c:if>
+                        <c:forEach var="brief" items="${client.briefs}">
+                            <c:if test="${brief.active}">
+                                <c:set var="nobriefs" value="false"/>
+                            </c:if>
+                            <c:if test="${lg:arrayIncludes(userForm.brief, brief.briefID)}">
+                                <c:set var="briefsel" value="true"/>
+                            </c:if>
+                        </c:forEach>
+                        <c:if test="${!nobriefs or briefsel or clientsel}">
+                            <c:choose>
+                                <c:when test="${nobriefs}">
+                                    <tr class="firstdisabled"><td>${client.clientName} (${client.clientCode})</td><td>&nbsp;</td><td><html:multibox property="client" value="${client.clientID}"/></td></tr>
+                                </c:when>
+                                <c:otherwise>
+                                    <tr class="first"><td>${client.clientName} (${client.clientCode})</td><td>&nbsp;</td><td><html:multibox property="client" value="${client.clientID}"/></td></tr>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:forEach var="brief" items="${client.briefs}">
+                                <c:choose>
+                                    <c:when test="${brief.active}">
+                                        <tr class="second"><td>&nbsp;</td><td>${brief.briefName} (${brief.briefCode})</td><td></td><td><html:multibox property="brief" value="${brief.briefID}"/></td></tr>
+                                    </c:when>
+                                    <c:when test="${lg:arrayIncludes(userForm.brief, brief.briefID)}">
+                                        <tr class="seconddisabled"><td>&nbsp;</td><td>${brief.briefName} (${brief.briefCode})</td><td></td><td><html:multibox property="brief" value="${brief.briefID}"/></td></tr>
+                                    </c:when>
+                                </c:choose>
+                            </c:forEach>
+                        </c:if>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+        <html:submit><fmt:message key="prompt.update"/></html:submit>
+	</html:form>
+</div>

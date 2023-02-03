@@ -1,0 +1,44 @@
+<%@ page language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="/WEB-INF/tags/query.tld" prefix="qry"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="mg" %>
+<html:xhtml/>
+<div class="info">
+    <script type="text/javascript" src="<html:rewrite href="script?resource=validate.js"/>"></script>
+	<script type="text/javascript" src='<html:rewrite href="script?resource=calendar.js"/>'></script>
+    <html:javascript formName="financeForm" method="validateFinance" cdata="false" staticJavascript="false" />
+    <mg:adminbar selected="finance" loginid="${financeForm.financeID}"/>
+	<h2><fmt:message key="title.finance"/> - ${financeForm.user.userName}</h2>
+	<html:messages name="mediagen.finance.messages" id="msg" header="finance.messages.header" footer="messages.footer">
+		<b class="message">${msg}</b>
+	</html:messages>
+    <html:messages name="mediagen.finance.errors" id="msg" header="finance.errors.header" footer="errors.footer">
+  		<b class="error">${msg}</b>
+	</html:messages>
+	<script type="text/javascript">var financeFormValidate = "mediagen.finance."</script>
+    <div class="validate" id="mediagen.finance.validate">
+	</div>
+	<html:form action="/admin-finance" method="post"  onsubmit="return validateFinance(this);">
+		<input type="hidden" name="action" value="update" />
+    	<html:hidden property="financeID" />
+		<table>
+			<tr>
+                <th></th>
+                <td><html:checkbox property="enabled" /> <fmt:message key="finance.enable" /></td>
+			</tr>
+            <tr>
+                <th></th>
+                <td><html:checkbox property="shareEnabled"/> <fmt:message key="finance.share.enable"/></td>
+            </tr>
+            <tr>
+		        <th></th>
+				<td>
+					<html:submit><fmt:message key="prompt.update"/></html:submit>
+				</td>
+			</tr>
+		</table>
+	</html:form>
+</div>

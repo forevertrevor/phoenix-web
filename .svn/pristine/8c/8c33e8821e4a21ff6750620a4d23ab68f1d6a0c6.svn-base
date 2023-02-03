@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+	<!-- Templates to output header and footers in an alert -->
+	<!-- 
+	Usage:
+		a. within <head>
+		<head>
+			...
+			<xsl:call-template name="title"/>
+			...
+		</head>
+	
+		b. within <body>
+		<body>
+			<xsl:apply-templates select="header"/>
+			...
+			<xsl:apply-templates select="footer"/>
+		</body>
+		
+		For a View All link
+        <xsl:call-template name="view-all"/>
+
+		For a View All and View Section links
+        <xsl:call-template name="view-sections"/>
+		
+	 -->
+
+	<xsl:import href="hash.xslf"/>
+
+	<xsl:template name="title">
+		<xsl:value-of select="user/user-name"/> - Email Alert - <xsl:value-of select="alert-date/dd"/>-<xsl:value-of select="alert-date/mmm"/>-<xsl:value-of select="alert-date/yyyy"/>, <xsl:value-of select="alert-date/hh"/>:<xsl:value-of select="alert-date/nn"/>
+	</xsl:template>
+	
+	<xsl:template name="header">
+        <h2><xsl:value-of select="user/user-name"/> - Email Alert - <xsl:value-of select="alert-date/dd"/>-<xsl:value-of select="alert-date/mmm"/>-<xsl:value-of select="alert-date/yyyy"/>, <xsl:value-of select="alert-date/hh"/>:<xsl:value-of select="alert-date/nn"/></h2>
+	</xsl:template>
+
+	<xsl:template name="footer">
+		<hr />
+		<h4>Prepared by xymedia <a href="mailto:mail@xy.media">mail@xy.media</a></h4>
+	</xsl:template>
+	
+	<xsl:template name="view-all">
+				<p>View: 
+					<xsl:call-template name="view-all-link"/>
+				</p>
+	</xsl:template>
+	
+	<xsl:template name="view-sections">
+				<p>View: 
+					<xsl:call-template name="view-all-link"/>
+	 				<xsl:apply-templates select="sorting/sort-brief/sort-section" mode="toc"/>
+				</p>
+	</xsl:template>
+
+	<xsl:template name="view-all-link">
+		<xsl:variable name="hash-value">
+			<xsl:call-template name="tobase">
+				<xsl:with-param name="number">
+					<xsl:call-template name="hash">
+						<xsl:with-param name="hash">0</xsl:with-param>
+						<xsl:with-param name="string"><xsl:value-of select="/alert/user/login-name"/><xsl:value-of select="/alert/user/password"/>/action/tool?fwd=printarticle&amp;action=printarticle&amp;newsForm=true&amp;datefrom=<xsl:value-of select="alert-date/dd"/>-<xsl:value-of select="alert-date/mmm"/>-<xsl:value-of select="alert-date/yyyy"/>&amp;dateto=<xsl:value-of select="alert-date/dd"/>-<xsl:value-of select="alert-date/mmm"/>-<xsl:value-of select="alert-date/yyyy"/></xsl:with-param>
+					</xsl:call-template>
+				</xsl:with-param>
+				<xsl:with-param name="base">16</xsl:with-param>
+			</xsl:call-template>
+ 		</xsl:variable>
+		<b><xsl:element name="a"><xsl:attribute name="href">http://mediagen.co.uk/action/auto-login?user=<xsl:value-of select="/alert/user/login-name"/>&amp;hash=<xsl:value-of select="$hash-value"/>&amp;url=/action/tool?fwd=printarticle~action=printarticle~newsForm=true~datefrom=<xsl:value-of select="alert-date/dd"/>-<xsl:value-of select="alert-date/mmm"/>-<xsl:value-of select="alert-date/yyyy"/>~dateto=<xsl:value-of select="alert-date/dd"/>-<xsl:value-of select="alert-date/mmm"/>-<xsl:value-of select="alert-date/yyyy"/></xsl:attribute>All</xsl:element><xsl:text> </xsl:text></b>
+	</xsl:template>
+
+	<xsl:template match="sort-section" mode="toc">
+		<xsl:call-template name="view-section-link">
+			<xsl:with-param name="id"><xsl:value-of select="@id"/></xsl:with-param>
+			<xsl:with-param name="name"><xsl:value-of select="@name"/></xsl:with-param>
+		</xsl:call-template>
+		<xsl:text> </xsl:text>
+	</xsl:template>
+
+	<xsl:template name="view-section-link">
+		<xsl:param name="name"/>
+		<xsl:param name="id"/>
+		<xsl:variable name="hash-value">
+			<xsl:call-template name="tobase">
+				<xsl:with-param name="number">
+					<xsl:call-template name="hash">
+						<xsl:with-param name="hash">0</xsl:with-param>
+						<xsl:with-param name="string"><xsl:value-of select="/alert/user/login-name"/><xsl:value-of select="/alert/user/password"/>/action/tool?fwd=printarticle&amp;action=printarticle&amp;newsForm=true&amp;datefrom=<xsl:value-of select="/alert/alert-date/dd"/>-<xsl:value-of select="/alert/alert-date/mmm"/>-<xsl:value-of select="/alert/alert-date/yyyy"/>&amp;dateto=<xsl:value-of select="/alert/alert-date/dd"/>-<xsl:value-of select="/alert/alert-date/mmm"/>-<xsl:value-of select="/alert/alert-date/yyyy"/>&amp;section=<xsl:value-of select="$id"/></xsl:with-param>
+					</xsl:call-template>
+				</xsl:with-param>
+				<xsl:with-param name="base">16</xsl:with-param>
+			</xsl:call-template>
+ 		</xsl:variable>
+		<xsl:element name="a"><xsl:attribute name="href">http://mediagen.co.uk/action/auto-login?user=<xsl:value-of select="/alert/user/login-name"/>&amp;hash=<xsl:value-of select="$hash-value"/>&amp;url=/action/tool?fwd=printarticle~action=printarticle~newsForm=true~datefrom=<xsl:value-of select="/alert/alert-date/dd"/>-<xsl:value-of select="/alert/alert-date/mmm"/>-<xsl:value-of select="/alert/alert-date/yyyy"/>~dateto=<xsl:value-of select="/alert/alert-date/dd"/>-<xsl:value-of select="/alert/alert-date/mmm"/>-<xsl:value-of select="/alert/alert-date/yyyy"/>~section=<xsl:value-of select="$id"/></xsl:attribute><xsl:value-of select="$name"/></xsl:element>
+	</xsl:template>
+
+</xsl:stylesheet>
